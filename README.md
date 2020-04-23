@@ -1,26 +1,28 @@
-﻿# DataFlow ALICE|CERN
+﻿# Data analysis in ALICE|CERN
 
-**The description of working with data of ALICE Experiment at CERN**
+**The description of working with data in ALICE Experiment at CERN**
 
 _[Boris Rumyantsev](mailto:bd.rumyantsev@gmail.com)_
 
-_These notes are result of my job in this direction_
+_These notes are result of my work in this direction_
 
-- [DataFlow ALICE|CERN](#dataflow-alicecern)
+- [Data analysis in ALICE|CERN](#data-analysis-in-alicecern)
   - [Data access](#data-access)
     - [GRID](#grid)
       - [Token](#token)
       - [AliEn](#alien)
       - [Data structure](#data-structure)
   - [Data analysis](#data-analysis)
-    - [Data acquisition](#data-acquisition)
-      - [Creation of analysis scripts](#creation-of-analysis-scripts)
-      - [Running in grid](#running-in-grid)
+    - [Creation of analysis scripts](#creation-of-analysis-scripts)
+    - [Choosing of runs](#choosing-of-runs)
+      - [Physics](#physics)
+      - [Triggers](#triggers)
+    - [Running analysis](#running-analysis)
+      - [Locally](#locally)
+      - [Grid test](#grid-test)
+      - [Grid full](#grid-full)
       - [LEGO trains](#lego-trains)
-      - [Choosing of runs](#choosing-of-runs)
-        - [Physics](#physics)
-        - [Triggers](#triggers)
-    - [Receiving the data from grid](#receiving-the-data-from-grid)
+    - [Receiving results](#receiving-results)
 
 ## Data access
 
@@ -32,10 +34,10 @@ _These notes are result of my job in this direction_
 
 Для доступа к системе грид, необходимо иметь актуальный сертификат, который действует в течение одного года.
 
-Инструкция для плучения есть здесь http://ca.grid.kiae.ru/RDIG/
+Инструкция для получения есть здесь http://ca.grid.kiae.ru/RDIG/
 
 Порядок такой:
-* каждый год необходимо продлять сертификат на год
+
 * для этого нужно следовать инструкции на сайте:
   * запустить скрипт по генерации ключей
   * заполнить анкету 
@@ -59,11 +61,13 @@ drwxrwxr-x  2 bdrum bdrum 4096 мая 14 17:05 .
 * конвертировать сертификат в формат p12 для доступа к грид сервисам из бразуера 
 
 ~~~bash
-root@nf-100-211:/home/bdrum/.globus# openssl pkcs12 -export -in cert.pem -inkey userkey.20181106-090218.pem -name "bdrumRDIGCert" -out cert.p12
+.globus# openssl pkcs12 -export -in cert.pem -inkey userkey.20181106-090218.pem -name "bdrumRDIGCert" -out cert.p12
 Enter pass phrase for userkey.20181106-090218.pem:
 Enter Export Password:
 Verifying - Enter Export Password:
 ~~~
+
+Каждый год сертификат необходимо продлять.
 
 Затем, необходимо иметь клиент для доступа к ГРИД. 
 
@@ -220,8 +224,6 @@ drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:13    ..
 
 ## Data analysis
 
-### Data acquisition
-
 Анализ данных в ЦЕРН можно проводить двумя способами:
 
 1. Набирать данные из системы грид к себе на локальную машину в соответствии со своими идеями и задачами, после чего заниматься их анализом локально. Идея в том, чтобы выгрузить как можно большее количество данных, которые потом можно свободно анализировать на локальной машине не завися от квот на использование grid.
@@ -230,7 +232,7 @@ drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:13    ..
 
 Несмотря на это, формально, подход строго унифицирован и требует задействование грид системы, а также понимания того как устроены данные как в вопросе их хранения, то есть какие раны нужно выбрать, так и в вопросе из обработки по конкретным триггерам и классам aliroot.
 
-#### Creation of analysis scripts
+### Creation of analysis scripts
 
 Задача набора и анализа данных проводится через aliroot с помощью класса:
 
@@ -251,6 +253,8 @@ drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:13    ..
 ~~~
 
 Рассмотрим файлы в отдельности:
+
+TODO: remove redundant variables
 
 AliAnalysisTaskUpcRho0.h
 
@@ -334,15 +338,11 @@ private:
 
 Прежде чем приступить к анализу данных необходимо их выбрать.
 
-#### Running in grid
-
-#### LEGO trains
-
-#### Choosing of runs
+### Choosing of runs
 
 Обработка данных, очевидно, ведется в соответствии с тем как они храняться. Так опуская очевидные уровни такие как год и период мы переходим к списку ранов, необходимые для передачи в скрипт анализа.
 
-##### Physics
+#### Physics
 
 Самое первое разделение может быть произведено по типу пучка:
 
@@ -353,7 +353,7 @@ private:
 
 В зависимости от этого типа удобно рассматривать разные физические явления.
 
-##### Triggers
+#### Triggers
 
 При наборе данных активно используется триггирование, которое несет двойную цель:
 
@@ -451,7 +451,20 @@ enum EOfflineTriggerTypes {
 
 ![3](https://sun9-7.userapi.com/c854028/v854028195/18b98d/2zDtgvdzTbY.jpg)
 
-### Receiving the data from grid
+
+### Running analysis
+TODO: add description
+
+#### Locally
+
+#### Grid test
+
+#### Grid full
+
+#### LEGO trains
+
+
+### Receiving results
 
 После завершения работы скрипта в гриде. Данные появятся в домашней директории aliensh в той иерархии, которая была задана в скрипте. Кстати на место в aliensh существуют квоты, заполнение своей квоты можно узнать так:
 
