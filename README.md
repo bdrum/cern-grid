@@ -9,11 +9,18 @@ _These notes are result of my job in this direction_
 - [DataFlow ALICE|CERN](#dataflow-alicecern)
   - [Data access](#data-access)
     - [GRID](#grid)
-    - [DataSignature](#datasignature)
+      - [Token](#token)
+      - [AliEn](#alien)
+      - [Data structure](#data-structure)
   - [Data analysis](#data-analysis)
     - [Data acquisition](#data-acquisition)
       - [Creation of analysis scripts](#creation-of-analysis-scripts)
+      - [Running in grid](#running-in-grid)
+      - [LEGO trains](#lego-trains)
       - [Choosing of runs](#choosing-of-runs)
+        - [Physics](#physics)
+        - [Triggers](#triggers)
+    - [Receiving the data from grid](#receiving-the-data-from-grid)
 
 ## Data access
 
@@ -21,7 +28,21 @@ _These notes are result of my job in this direction_
 
 ### GRID
 
-Для доступа к системе грид, необходимо иметь актуальный сертификат, который действует в течение одного года. Выданный сертификат подразумевает наличие файлов:
+#### Token
+
+Для доступа к системе грид, необходимо иметь актуальный сертификат, который действует в течение одного года.
+
+Инструкция для плучения есть здесь http://ca.grid.kiae.ru/RDIG/
+
+Порядок такой:
+* каждый год необходимо продлять сертификат на год
+* для этого нужно следовать инструкции на сайте:
+  * запустить скрипт по генерации ключей
+  * заполнить анкету 
+    * Common Name обязательно Name LastName (nick нельзя)
+* Отправить  Громовой Наталье Ивановне скан на почту 
+* Дождаться ответа в виде ключа
+* Ключ положить в папку .globus, вот так должно выглядеть ее содержимое
 
 ~~~bash
  /# Обрати внимание, что файлы и папка должны иметь соответствующие права и пользователя
@@ -33,7 +54,22 @@ drwxrwxr-x  2 bdrum bdrum 4096 мая 14 17:05 .
 -rwxrwxr-x  1 bdrum bdrum  820 мая 14 17:05 userreq.mail
 ~~~
 
-Затем, необходимо иметь клиент для доступа к ГРИД. Такой клиент реализован в aliroot, т.е. необходимо установить [AliPhysics](https://alice-doc.github.io/alice-analysis-tutorial/building/build.html)
+где usercert.pem - файл с ключом из письма
+
+* конвертировать сертификат в формат p12 для доступа к грид сервисам из бразуера 
+
+~~~bash
+root@nf-100-211:/home/bdrum/.globus# openssl pkcs12 -export -in cert.pem -inkey userkey.20181106-090218.pem -name "bdrumRDIGCert" -out cert.p12
+Enter pass phrase for userkey.20181106-090218.pem:
+Enter Export Password:
+Verifying - Enter Export Password:
+~~~
+
+Затем, необходимо иметь клиент для доступа к ГРИД. 
+
+#### AliEn
+
+Alien - клиент для доступа в грид. Его можно установить отдельно, но лучше всего устанавливать сразу [AliPhysics](https://alice-doc.github.io/alice-analysis-tutorial/building/build.html)
 
 Список установленных пакетов
 
@@ -47,123 +83,22 @@ alienv enter AliPhysics/latest
 /# alienv enter VO_ALICE@AliPhysics::vAN-20190513_ROOT6-1 # in some special case
 ~~~
 
+> **Как я понимаю теперь используется какое-то кэширование входа. Так при попытке выполнить команду, в случае, если отсутствует активный токен, она будет автоматически восстановлен. Таким образом описание ниже более не актуально.**
+
 Вход в ГРИД:
 
 ~~~bash
 alien-token-init $userName
 ~~~
 
-Доступ дается на сутки, затем для доступа к данным 
+Доступ дается на сутки, затем для доступа к данным необходимо зайти в специальный shell - aliensh: 
 
 ~~~bash
 aliensh
 aliensh:[alice] [..]cd /alice/data/2018/LHC18r/000296690
 ~~~
-Данные находятся в системе [GRID]() в соответствующей директории: 
-~~~bash
-aliensh:[alice] [23] /alice/data/2018/LHC18r/000296690/ >ls -la
-drwxr-xr-x   alidaq   alidaq   0 Dec 04 14:23    .                                 
-drwxr-xr-x   alidaq   alidaq   0 Nov 21 13:52    ..                                 
-crwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    collection                                 
-crwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    collection_10p                                 
-crwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    collection_90p                                 
-crwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    collection_calib                                 
-drwxr-xr-x   alidaq   alidaq   0 Dec 04 14:23    cpass0_pass1                                 
-drwxr-xr-x   alidaq   alidaq   0 Dec 04 14:23    cpass1_pass1                                 
--rwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    fullrun.xml                                 
-drwxr-xr-x   alidaq   alidaq   0 Mar 13 03:45    muon_calo_pass3                                 
-drwxr-xr-x   alidaq   alidaq   0 Jan 09 07:45    pass1                                 
-drwxr-xr-x   alidaq   alidaq   0 Dec 04 14:23    raw                                 
-drwxr-xr-x   alidaq   alidaq   0 Dec 26 16:56    skim_CALOPLUS 
-~~~
 
-Директория raw содержит так называемые "сырые", не обработанные данные. Людей, занимающихся анализом, они редко интересуют.
-
-Такие данные подвергаются процессу реконструкции треков. Реконструкция, может проводится в несколько проходов, результаты таких проходов помещаются в директории passN, где N - номер прохода. В нашем случае был только один проход.
-
-~~~bash
-aliensh:[alice] [30] /alice/data/2018/LHC18r/000296690/pass1/ > ls -la
-...
-drwxr-xr-x   alidaq   alidaq              0 Jan 12 21:38    18000296690039.929                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 13 01:28    18000296690039.930                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 13 00:11    18000296690039.931                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:13    AOD                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:14    MergedTrees                                 
--rwxr-xr-x   alidaq   alidaq      340818292 Jan 09 07:55    OCDB.root                                 
--rwxr-xr-x   alidaq   alidaq          14491 Jan 09 07:55    ocdb_log_archive.zip                                 
-drwxr-xr-x   alidaq   alidaq              0 Feb 09 00:28    PWGDQ                                 
-drwxr-xr-x   alidaq   alidaq              0 May 09 23:24    PWGGA                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 17 18:19    PWGHF                                 
-drwxr-xr-x   alidaq   alidaq              0 May 13 01:18    PWGJE                                 
-drwxr-xr-x   alidaq   alidaq              0 Feb 09 14:34    PWGLF                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 16 11:09    PWGPP                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 22 11:34    PWGUD                                 
-drwxr-xr-x   alidaq   alidaq              0 Mar 09 00:31    PWGZZ                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 15 12:05    QA                                 
--rwxr-xr-x   alidaq   alidaq          50052 Jan 09 07:55    rec.log                                 
--rwxr-xr-x   alidaq   alidaq       16321876 Jan 15 06:17    Stage_1.xml                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:23    Stage_1                                 
--rwxr-xr-x   alidaq   alidaq         812520 Jan 15 08:46    Stage_2.xml                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 15 08:48    Stage_2                                 
--rwxr-xr-x   alidaq   alidaq          49346 Jan 15 09:12    Stage_3.xml                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 15 09:14    Stage_3                                 
--rwxr-xr-x   alidaq   alidaq           7077 Jan 15 09:46    Stage_5.xml                                 
--rwxr-xr-x   alidaq   alidaq            416 Jan 09 07:55    stderr.ocdb.log                                 
--rwxr-xr-x   alidaq   alidaq          35416 Jan 09 07:55    stdout.ocdb.log                                 
-~~~
-
-В директории "проходов" пока нас интересуют только директории [AOD(Analysis object data)](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AODsets), это данные агрегированные в ОО парадигме. И уже внутри этой директории можно найти сами данные:
-
-~~~bash
-aliensh:[alice] [33] /alice/data/2018/LHC18r/000296690/pass1/AOD/ >ls
-...
-9997
-9998
-9999
-aod_collection.xml
-aliensh:[alice] [35] /alice/data/2018/LHC18r/000296690/pass1/AOD/9999/ >ls -la
-drwxr-xr-x   alidaq   alidaq              0 Jan 15 07:43    .                                 
-drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:13    ..                                 
--rwxr-xr-x   alidaq   alidaq            149 Jan 15 08:01    1091_1091_0_911.stat                                 
--rwxr-xr-x   alidaq   alidaq        1654309 Jan 15 08:01    AliAOD.Muons.root                                 
--rwxr-xr-x   alidaq   alidaq      945827811 Jan 15 08:01    AliAOD.root                                 
--rwxr-xr-x   alidaq   alidaq      224698358 Jan 15 08:01    AliAOD.VertexingHF.root                                 
--rwxr-xr-x   alidaq   alidaq       86957503 Jan 15 08:01    AliAODGammaConversion.root                                 
--rwxr-xr-x   alidaq   alidaq        3662124 Jan 15 08:01    AODQA.root                                 
--rwxr-xr-x   alidaq   alidaq          24103 Jan 15 08:01    AOD_log_archive.zip                                 
--rwxr-xr-x   alidaq   alidaq     1271609856 Jan 15 08:01    aod_archive.zip                                 
--rwxr-xr-x   alidaq   alidaq         756953 Jan 15 08:01    EventStat_temp.root                                 
--rwxr-xr-x   alidaq   alidaq        8051721 Jan 15 08:01    FilterEvents_Trees.root                                 
--rwxr-xr-x   alidaq   alidaq          92534 Jan 15 08:01    stderr.log                                 
--rwxr-xr-x   alidaq   alidaq          90827 Jan 15 08:01    stdout.log            
-~~~
-
-После получения данных через [запуск скриптов в грид](), они появляются в домашней директории aliensh. Нужно сделать две операции:
-
-TODO: describe the modern approach:
-    alihadd
-    alisync
-    alien_cp
-    alien_rsync.sh
-
-1. Копировать данные в рабочую директорию на lxplus. Это можно сделать таким скриптом:
-
-~~~bash
-    x=1; for f in $(find . *.root); do x=$((x+1)); cp $f file:/afs/cern.ch/work/b/brumyant/dev/forMerge/$x.root; done;
-    /# для копирования большого числа файлов нужно понимать их уникальный путь, иначе не удастся восстановить какие уже скачал
-    for f in $(find . *.root); do x=$(/usr/bin/basename $(/usr/bin/dirname $(/usr/bin/dirname $f))).$(/usr/bin/basename $(/usr/bin/dirname $f)).$(/usr/bin/basename $f); cp $f file:/mnt/d/GoogleDrive/Job/cern/Alice/analysis/data/rho/2015/forMerge/$x; done;
-~~~
-
-1. Объединить копированные данные в один root-file:
-
-~~~bash
-   /# hadd result.root file1.root file2.root ... fileN.root
-    hadd result.root *.root
-~~~
-
-hadd - утилита поставляемая вместе с root в $ROOTSYS/bin/hadd.
-
-### DataSignature
+#### Data structure
 
 Данные находятся на grid-серверах и распределены по директориям в соответствии с такой схемой:
 
@@ -202,6 +137,86 @@ alice
 /alice/data/2018/LHC18r/000296690/pass1/18000296690039.931/AliESDs.root
 /alice/data/2018/LHC18r/000296690/pass1/PWGUD/UD_PbPb_ESD/243_20191110-1108_child_2/0342/AnalysisResults.root
 ~~~
+
+Каждая из директорий содержит множество вспомогателньых данных, а также данных необходимых для работ специальных групп, например контроль качества данных и так далее: 
+~~~bash
+aliensh:[alice] [23] /alice/data/2018/LHC18r/000296690/ >ls -la
+drwxr-xr-x   alidaq   alidaq   0 Dec 04 14:23    .                                 
+drwxr-xr-x   alidaq   alidaq   0 Nov 21 13:52    ..                                 
+crwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    collection                                 
+crwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    collection_10p                                 
+crwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    collection_90p                                 
+crwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    collection_calib                                 
+drwxr-xr-x   alidaq   alidaq   0 Dec 04 14:23    cpass0_pass1                                 
+drwxr-xr-x   alidaq   alidaq   0 Dec 04 14:23    cpass1_pass1                                 
+-rwxr-xr-x   alidaq   alidaq   - Dec 04 14:23    fullrun.xml                                 
+drwxr-xr-x   alidaq   alidaq   0 Mar 13 03:45    muon_calo_pass3                                 
+drwxr-xr-x   alidaq   alidaq   0 Jan 09 07:45    pass1                                 
+drwxr-xr-x   alidaq   alidaq   0 Dec 04 14:23    raw                                 
+drwxr-xr-x   alidaq   alidaq   0 Dec 26 16:56    skim_CALOPLUS 
+~~~
+
+Директория raw содержит так называемые "сырые", не обработанные, данные. Людей, занимающихся анализом, они редко интересуют.
+
+Такие данные подвергаются процессу реконструкции треков. Реконструкция, может проводится в несколько проходов, результаты таких проходов помещаются в директории passN, где N - номер прохода. В нашем случае был только один проход.
+
+~~~bash
+aliensh:[alice] [30] /alice/data/2018/LHC18r/000296690/pass1/ > ls -la
+...
+drwxr-xr-x   alidaq   alidaq              0 Jan 12 21:38    18000296690039.929                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 13 01:28    18000296690039.930                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 13 00:11    18000296690039.931                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:13    AOD                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:14    MergedTrees                                 
+-rwxr-xr-x   alidaq   alidaq      340818292 Jan 09 07:55    OCDB.root                                 
+-rwxr-xr-x   alidaq   alidaq          14491 Jan 09 07:55    ocdb_log_archive.zip                                 
+drwxr-xr-x   alidaq   alidaq              0 Feb 09 00:28    PWGDQ                                 
+drwxr-xr-x   alidaq   alidaq              0 May 09 23:24    PWGGA                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 17 18:19    PWGHF                                 
+drwxr-xr-x   alidaq   alidaq              0 May 13 01:18    PWGJE                                 
+drwxr-xr-x   alidaq   alidaq              0 Feb 09 14:34    PWGLF                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 16 11:09    PWGPP                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 22 11:34    PWGUD                                 
+drwxr-xr-x   alidaq   alidaq              0 Mar 09 00:31    PWGZZ                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 15 12:05    QA                                 
+-rwxr-xr-x   alidaq   alidaq          50052 Jan 09 07:55    rec.log                                 
+-rwxr-xr-x   alidaq   alidaq       16321876 Jan 15 06:17    Stage_1.xml                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:23    Stage_1                                 
+-rwxr-xr-x   alidaq   alidaq         812520 Jan 15 08:46    Stage_2.xml                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 15 08:48    Stage_2                                 
+-rwxr-xr-x   alidaq   alidaq          49346 Jan 15 09:12    Stage_3.xml                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 15 09:14    Stage_3                                 
+-rwxr-xr-x   alidaq   alidaq           7077 Jan 15 09:46    Stage_5.xml                                 
+-rwxr-xr-x   alidaq   alidaq            416 Jan 09 07:55    stderr.ocdb.log                                 
+-rwxr-xr-x   alidaq   alidaq          35416 Jan 09 07:55    stdout.ocdb.log                                 
+~~~
+
+В директории "проходов" пока нас интересуют только директории [AOD(Analysis object data)](https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AODsets), это данные агрегированные в ОО парадигме. И уже внутри этой директории можно найти интересующие рут файлы AliAOD.root:
+
+~~~bash
+aliensh:[alice] [33] /alice/data/2018/LHC18r/000296690/pass1/AOD/ >ls
+...
+9997
+9998
+9999
+aod_collection.xml
+aliensh:[alice] [35] /alice/data/2018/LHC18r/000296690/pass1/AOD/9999/ >ls -la
+drwxr-xr-x   alidaq   alidaq              0 Jan 15 07:43    .                                 
+drwxr-xr-x   alidaq   alidaq              0 Jan 15 06:13    ..                                 
+-rwxr-xr-x   alidaq   alidaq            149 Jan 15 08:01    1091_1091_0_911.stat                                 
+-rwxr-xr-x   alidaq   alidaq        1654309 Jan 15 08:01    AliAOD.Muons.root                                 
+-rwxr-xr-x   alidaq   alidaq      945827811 Jan 15 08:01    AliAOD.root                                 
+-rwxr-xr-x   alidaq   alidaq      224698358 Jan 15 08:01    AliAOD.VertexingHF.root                                 
+-rwxr-xr-x   alidaq   alidaq       86957503 Jan 15 08:01    AliAODGammaConversion.root                                 
+-rwxr-xr-x   alidaq   alidaq        3662124 Jan 15 08:01    AODQA.root                                 
+-rwxr-xr-x   alidaq   alidaq          24103 Jan 15 08:01    AOD_log_archive.zip                                 
+-rwxr-xr-x   alidaq   alidaq     1271609856 Jan 15 08:01    aod_archive.zip                                 
+-rwxr-xr-x   alidaq   alidaq         756953 Jan 15 08:01    EventStat_temp.root                                 
+-rwxr-xr-x   alidaq   alidaq        8051721 Jan 15 08:01    FilterEvents_Trees.root                                 
+-rwxr-xr-x   alidaq   alidaq          92534 Jan 15 08:01    stderr.log                                 
+-rwxr-xr-x   alidaq   alidaq          90827 Jan 15 08:01    stdout.log            
+~~~
+
 
 ## Data analysis
 
@@ -319,128 +334,60 @@ private:
 
 Прежде чем приступить к анализу данных необходимо их выбрать.
 
+#### Running in grid
+
+#### LEGO trains
+
 #### Choosing of runs
 
-Прежде чем анализировать данные, нужно понимать какие данные нужны и откуда их взять. Все данные хранятся, как описано выше, на серверах ЦЕРНа.
+Обработка данных, очевидно, ведется в соответствии с тем как они храняться. Так опуская очевидные уровни такие как год и период мы переходим к списку ранов, необходимые для передачи в скрипт анализа.
 
-Необходимые данные для анализа задачи ультраперифирических взаимодействий в 2015 году набирались с использованием триггеров CCUP8, CCUP9.
+##### Physics
 
-Эти триггеры специально создавались под эту задачу. Об этом сообщается на митингах рабочей группы.
+Самое первое разделение может быть произведено по типу пучка:
 
-Найдем номера ранов, которые в 2015 году соответствовали этим триггерам.
+* p-p - proton - proton
+* Pb-Pb - led led 
+* Xe-Xe - xenon - xenon
+* p-Pb - proton - led
 
-Для этого зайдем в [логбук Алисы](https://alice-logbook.cern.ch/logbook/date_online.php?p_cont=lc&p_cpn=1&p_cvm=Compact&pcf_crn=245145%2C246994)
+В зависимости от этого типа удобно рассматривать разные физические явления.
 
-Затем перейдем в меню [Runs-->Statistics->Trigger Classes](https://alice-logbook.cern.ch/logbook/date_online.php?p_cont=rtcl&p_rsob=l.run&p_rsob_dir=DESC&p_rspn=1&prsf_rpart=unset):
-![](https://pp.userapi.com/c850528/v850528008/164aca/JGYmt6RPcm0.jpg)
+##### Triggers
 
-Здесь можно искать раны в соответствии со многими параметрами. На данный момент нас интересуют Partition = Physics1 и Trigger Classes CCUP8, CCUP9:
+При наборе данных активно используется триггирование, которое несет двойную цель:
 
-![](https://pp.userapi.com/c849132/v849132008/1c249b/fQFpTHI5p2s.jpg)
+1. Ограничить объем данных:
+   Пучки сталкиваются каждые 25нс, т.о. частоту столкновений можно записать как 40MHz (Run1 pp?). Для столкновений p-Pb - 200kHz, Pb-Pb: 2kHz. Частота выбирается с учетом возможнотей детектора, так с детекторов необходимо считать информацию, записать ее и затем подготовить детекторы к новому столкновению. ?Для ALICE pp(25ns) не используется.?
+  Это очень много событий, мы не можем записать их все по двум причинам:
 
-Чтобы узнать состав триггера необходимо на странице подробной информации о ране перейти на вкладку trigger info:
+   * **Ограничение на время считывания** - Максимальное время считывания у детекторов 1024 мкс на событие, такой детектор может записывать не более ~1000 событий в секунду.  
+    ![](https://pp.userapi.com/c845524/v845524302/2014bd/QDOoDWtDR7I.jpg)
+   * **Ограниченный объем хранилищ данных**
+    Например,время считывания TPC = 500 микросекунд, а объем записываемых данных 25740kB, значит каждую секунду TPC может записывать:
+$$\frac{1}{500}*10^6*\frac{25740}{1024*1024}=4.9GB$$
+  Даже несмотря на эти ограничения, если начать считывать события в случайный момент времени, оно окажется пустым с вероятностью > 99%.
+  Поэтому, нужны  (minimum bias triggers) "пороговые" триггеры, которые позволяют отследить не нулевую активность на детекторах в "онлайне".
+  Однако существуют редкие события, которые никогда не наберут статистику с "пороговыми" триггерами, поэтому нужны специальные триггеры редких событий, например большая накопленная энергия на EMCAL, два мюона в мюонном плече и т.д.)
 
-![](https://pp.userapi.com/c849424/v849424341/1c5c44/PNBhpYXdVh8.jpg)
- 
-Информация ниже взята из вкладки Expert View:
+2. Обеспечить работу множества научных групп:
+  На эксперименте работает большое число научных групп, каждую из которых интересует разная физика, таким образом исходный канал 2kHz необходимо поделить между ними. Это также происходит путем триггеров.
+  Например на группу UPC выделяют 30-40Hz. При этом частота триггера может быть выше, чем выделенные 30-40Hz, в таких случаях применяют downscaling, то есть события пропускают так, что бы заполнить выделенный канал. Вес даунскейлинга можно посмотреть в логбуке:
+  ![2](https://pp.userapi.com/c844320/v844320302/1fd09e/Q6Kzwc4uhC8.jpg)
+  Так, например, коэф. 0.32% означает, что каждое 300 событие пропускалось. 
 
-CCUP8-B-NOPF-CENTNOTRD 33 DCUP8 CENTNOTRD {NONE} {BCM1} 0 0 0 0 33
+TODO: При этом число 22 865  указано из набранных, т.е. общее число событий было  6 859 500? То есть что такое L2a?
 
-CCUP8-A-NOPF-CENTNOTRD 34 DCUP8 CENTNOTRD {NONE} {BCM2} 0 0 0 0 34
+Детекторы участвующие в триггировании:
 
-CCUP8-C-NOPF-CENTNOTRD 35 DCUP8 CENTNOTRD {NONE} {BCM3} 0 0 0 0 35
+![](https://pp.userapi.com/c850736/v850736302/11ca91/vPEOeSdje-k.jpg)
 
-CCUP8-E-NOPF-CENTNOTRD 36 DCUP8 CENTNOTRD {NONE} {BCM4} 0 0 0 0 36
+Для каждого рана мы можем посмотреть список триггеров:
+![](https://pp.userapi.com/c851524/v851524150/12744e/sTeJFcwO1iE.jpg)
 
-CCUP9-B-NOPF-CENTNOTRD 41 DCUP9 CENTNOTRD {NONE} {BCM1} 2085528 0 0 0 41
+> **Стоит отметить, что в 2021 году в Run3 триггеров не будет и будут записываться все события**
 
-CCUP9-A-NOPF-CENTNOTRD 42 DCUP9 CENTNOTRD {NONE} {BCM2} 2085528 0 0 0 41
-
-CCUP9-C-NOPF-CENTNOTRD 43 DCUP9 CENTNOTRD {NONE} {BCM3} 2085528 0 0 0 41
-
-CCUP9-E-NOPF-CENTNOTRD 44 DCUP9 CENTNOTRD {NONE} {BCM4} 2085528 0 0 0 41
-
-Распишем что означает каждый из компонентов триггера:
-
-**CCUP8-E-NOPF-CENTNOTRD 36 DCUP8 CENTNOTRD {NONE} {BCM4} 0 0 0 0 36**
-
-> CCUP8 - верхнеуровневое название триггера
-
-> B - направление пучка
-
-> NOPF - no past future? TODO:
-
-> CENTNOTRD - 3 SPD SDD SSD TPC TOF CPV T0 V0 ZDC EMCal AD
-
-> 36 TODO:
-
->DCUP8 - *0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-
-> CENTNOTRD - 
-
-> {NONE}  TODO:
-
-> {BCM1}  TODO:
-
-> 0(первое число) - это понижающий(DownScale) фактор закодированный во внутренний формат CTP. Напрмер - 1660377 = (0.20827)  
->Для декодирования использовать: [AliTriggerClass::GetDownscaleFactor(Double_t& ds)](https://github.com/alisw/AliRoot/blob/master/STEER/ESD/AliTriggerClass.cxx)
-
-0
-0
-0
-33 TODO:
-
-0STP SPD 0 35 14 26
-
-0OMU TOF 0 61 12 33
-
-
-Как видно все триггеры состоят из нескольких низкоуровневых треггиеров, каждйы из котороых связан с определенным детектором, в частности:
-
-DCUP8 - 
-
-*0VBA - звезда обозначает вето. на v0 A не должно быть сигнала
-
-*0VBC 
-
-*0UBA - ?TODO:
-
-*0UBC - ?TODO:
-
-0STP - SPD
-
-0OMU - TOF
-
-
-DCUP9  *0VBA *0VBC *0UBA *0UBC 0STP
-
-Интересное наблюдение, что в CUP8 добавлен еще один тригер на TOF по сравнению с CUP9, что казалось, должно урезать данные, однако данных с CUP8 гораздо больше, это свяазно с DawnScaling, коэфициент которого можно посмотреть на вкладке Classes:
-![](https://pp.userapi.com/c858128/v858128341/16a0/nffkVCZdkv4.jpg)
-
-Как видно для CCUP8 масштабирование отсутсвует, в то время как для CCUP9 оно составляет 0.5%, что означает, что лишь такой процент от данных будет записан.
-
-
-
-DCUP29  *0VBA *0VBC *0UBA *0UBC 0STG 
-DCUP30  *0VBA *0VBC *0UBA *0UBC 0STG 0OM2
-DCUP31  *0VBA *0VBC *0UBA *0UBC 0STG 0OMU
-
-
-0UBA AD 0 56 4 40
-
-0UBC AD 0 57 5 41
-
-0VBA V0 0 52 1 6
-
-0VBA V0 M x 1 6
-
-0STG SPD 0 37 16 26
-
-0OMU TOF 0 61 13 33
-
-0OM2 TOF 0 60 12 31
-
-В коде каждому триггеру выставляется [бит](https://github.com/alisw/AliRoot/blob/master/STEER/STEERBase/AliVEvent.h).
+В aliroot каждому триггеру выставляется соответствующий [бит](https://github.com/alisw/AliRoot/blob/master/STEER/STEERBase/AliVEvent.h).
 
 ~~~cpp
 enum EOfflineTriggerTypes { 
@@ -500,8 +447,44 @@ enum EOfflineTriggerTypes {
 };
 ~~~
 
-Выбор ранов осуществлялся такими фильтрами
-![](https://sun9-7.userapi.com/c854028/v854028195/18b98d/2zDtgvdzTbY.jpg)
+Пример фильтров при выборе ранов:
+
+![3](https://sun9-7.userapi.com/c854028/v854028195/18b98d/2zDtgvdzTbY.jpg)
+
+### Receiving the data from grid
+
+После завершения работы скрипта в гриде. Данные появятся в домашней директории aliensh в той иерархии, которая была задана в скрипте. Кстати на место в aliensh существуют квоты, заполнение своей квоты можно узнать так:
+
+![1](https://sun9-69.userapi.com/c857120/v857120643/16ef2f/FD6W0wwjXw8.jpg)
+
+TODO: можно ли сразу сохранять данные на локальную машину?
+
+Для того, чтобы копировать данные на локальную машину необходимо воспользоваться одной из команд
+
+* alisync - синхронизирует выбранные директории локально и удаленно. Работает параллельно.
+* alien_cp - позволяет копировать файлы с использованием регулярных выражений.
+* TODO: alien_rsync.sh
+
+Раньше копирование выполнялось с помощью таких скриптов:
+
+~~~bash
+    x=1; for f in $(find . *.root); do x=$((x+1)); cp $f file:/afs/cern.ch/work/b/brumyant/dev/forMerge/$x.root; done;
+    /# для копирования большого числа файлов нужно понимать их уникальный путь, 
+    /# иначе не удастся восстановить какие уже скачал
+    /# поэтому лучше использовать скрипт, который сохраняет номера ранов и номер внутренней директории
+    for f in $(find . *.root); do x=$(/usr/bin/basename $(/usr/bin/dirname $(/usr/bin/dirname $f))).$(/usr/bin/basename $(/usr/bin/dirname $f)).$(/usr/bin/basename $f); cp $f file:/mnt/d/GoogleDrive/Job/cern/Alice/analysis/data/rho/2015/forMerge/$x; done;
+~~~
+
+После обработки файлов может быть огромное количество, например 20 000. Их удобно объединить в один файл. Это можно сделать с помощью утилиты поставляемой вместе с root - ROOTSYS/bin/hadd.
+При этом, как я понимаю, лучше пользоваться alihadd, так как эта команда понимает специализированные классы aliroot.
+
+~~~bash
+   /# hadd result.root file1.root file2.root ... fileN.root
+    hadd result.root *.root
+
+    /# для файлов aliroot
+    alihadd res.root *.root
+~~~
 
 
 [^1]: [Презентация](file://D:\GoogleDrive\Job\cern\Alice\study\AliceDataFlow.pdf)
