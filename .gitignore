@@ -1018,3 +1018,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+
+.ipynb_checkpoints/*
+.ipynb_checkpoints/
