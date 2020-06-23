@@ -17,6 +17,8 @@ class AliESDTrack;
 class TBits;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliESDtrack.h"
+#include <vector>
 
 class AliAnalysisTaskUpcRhoPrime : public AliAnalysisTaskSE
 {
@@ -60,29 +62,32 @@ private:
     Float_t ZNCenergy;
     Float_t ZPAenergy;
     Float_t ZPCenergy;
-    Float_t ZDCAtime[4];
-    Float_t ZDCCtime[4];
-    Float_t PIDTPCPion[4];
-    Float_t PIDTPCElectron[4];
-    Int_t TPCsignal[4];
-    Float_t TrackP[4];
-    Float_t Vertex[3];
     Int_t VtxContrib;
     Float_t VtxChi2, VtxNDF;
-    Float_t SpdVertex[3];
     Int_t SpdVtxContrib;
     Int_t Ntracklets;
+    Int_t nTracks;
     Float_t Phi;
-    Float_t TrackEta[4];
-    Float_t TrackPhi[4];
-    Float_t TrackPx[4];
-    Float_t TrackPy[4];
-    Float_t TrackPz[4];
-    Short_t TrackQ[4];
-    Bool_t TrackHasPointOnITSLayer0[4];
-    Bool_t TrackHasPointOnITSLayer1[4];
-    Int_t TrackITSModuleInner[4];
-    Int_t TrackITSModuleOuter[4];
+    Float_t Vertex[3];
+    Float_t SpdVertex[3];
+    Float_t ZDCAtime[4];
+    Float_t ZDCCtime[4];
+
+    std::vector<Float_t> PIDTPCPion;
+    std::vector<Float_t> PIDTPCElectron;
+    std::vector<Int_t>   TPCsignal;
+    std::vector<Float_t> TrackP;
+    std::vector<Float_t> TrackEta;
+    std::vector<Float_t> TrackPhi;
+    std::vector<Float_t> TrackPx;
+    std::vector<Float_t> TrackPy;
+    std::vector<Float_t> TrackPz;
+    std::vector<Short_t> TrackQ;
+    std::vector<Bool_t>  TrackHasPointOnITSLayer0;
+    std::vector<Bool_t>  TrackHasPointOnITSLayer1;
+    std::vector<Int_t>   TrackITSModuleInner;
+    std::vector<Int_t>   TrackITSModuleOuter;
+
     // TODO: Possible good idea is keep fTriggerName in such view
     // TString of "CUP9;CUP2"
     // in this case we could add new triggers from lego train interface
@@ -92,21 +97,6 @@ private:
     Bool_t IsC1ZED;
 
     AliPIDResponse* fPIDResponse;
-
-    TList* fListHist;
-    TH1I* fHistTriggersPerRun;
-    TH1I* fITSmodule;
-    TH1I* fFOchip;
-    TH1I* fFOcount;
-    TH1F* TPCclustersP;
-    TH1F* TPCclustersN;
-    TH2F* dEdx;
-    TH2F* EtaPhiP;
-    TH2F* EtaPhiN;
-
-    TH2F* fFOcorr;
-    TH1F* fGoodTracks;
-    TH1F* fTrackChi2;
 
     AliAnalysisTaskUpcRhoPrime(
         const AliAnalysisTaskUpcRhoPrime&); // not implemented

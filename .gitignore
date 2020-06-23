@@ -1022,3 +1022,8 @@ dkms.conf
 
 .ipynb_checkpoints/*
 .ipynb_checkpoints/
+
+*.pcm
+*.root
+.vscode
+.vscode/*

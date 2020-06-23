@@ -52,7 +52,7 @@ AliAnalysisTaskUpcRhoPrime *AddTaskUpcRhoPrime()
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
-  mgr->ConnectOutput(task, 2, coutput2);
+  // mgr->ConnectOutput(task, 2, coutput2);
 
   return task;
 }

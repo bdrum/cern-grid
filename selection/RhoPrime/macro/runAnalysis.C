@@ -66,7 +66,7 @@ void runAnalysis()
     // add a few files to the chain (change this so that your local files are
     // added)
     chain->Add(
-        "/mnt/d/GoogleDrive/Job/cern/Alice/analysis/rho/data/2015/245145.AliESDs.root");
+        "/mnt/d/GoogleDrive/Job/cern/Alice/analysis/data/RhoPrime/2015/245145.AliESDs.root");
 
     // start the analysis locally, reading the events from the tchain
     // for successful analysis should be limited -> 2, 1
