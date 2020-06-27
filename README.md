@@ -500,4 +500,23 @@ TODO: можно ли сразу сохранять данные на локал
 ~~~
 
 
+### Killing jobs
+
+alien.py ps возвращает список запущенных jobs, однако, этот список, похоже, показывает не masterjob, идентификаторы которых отображаются на странице монитора в столбце PID, а все subjobs, на странице монитора показано лишь их число.
+
+Поэтому правильно взять список masterjobs с сайта и завершать их.
+Вариант, представленный ниже, очень долгий из-за того, что число subjobs огромно, кроме того, команда kill subjobid  не удаляет процесс из списка, а изменяет его статус на 'K', при этом число subjobs непрерывно уменьшается при выполнении скирпта:
+
+~~~python
+import os
+
+processes = os.popen("alien.py ps").readlines()
+pids = [process.split(' ')[3] for process in processes if process.split(' ')[9] != 'K']
+len(pids)
+for pid in pids:
+    os.system(f'alien.py kill {pid}')
+    print (f'{pid} has killed')
+
+~~~
+
 [^1]: [Презентация](file://D:\GoogleDrive\Job\cern\Alice\study\AliceDataFlow.pdf)

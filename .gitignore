@@ -1027,3 +1027,8 @@ dkms.conf
 *.root
 .vscode
 .vscode/*
+*.xml
+stderr
+*_*
+*Task.sh
+myAnalysis.C

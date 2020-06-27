@@ -10,15 +10,25 @@
 #include "TROOT.h"
 #include "TString.h"
 #include "TTree.h"
+#include "TSystem.h"
+#include "/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/AliRoot/v5-09-53-1/ANALYSIS/macros/AddTaskPIDResponse.C"
 
 void runAnalysis()
 {
 
-  Bool_t local = kTRUE;
+  Bool_t local = kFALSE;
   Bool_t gridTest = kTRUE;
   //  kTRUE
   //  kFALSE
 
+  gSystem->AddIncludePath("-I$ROOTSYS/include");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+  gSystem->AddIncludePath("-I$ALICE_PHYSICS/include");
+
+  /* load libraries */
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libOADB");
   // since we will compile a class, tell root where to look for headers
 #if !defined(__CINT__) || defined(__CLING__)
   gInterpreter->ProcessLine(".include $ROOTSYS/include");
@@ -39,6 +49,9 @@ void runAnalysis()
   mgr->SetInputEventHandler(esdH);
 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+
+  AddTaskPIDResponse();
+
   // compile the class and load the add task macro
   // here we have to differentiate between using the just-in-time compiler
   // from root6, or the interpreter of root5
@@ -50,11 +63,14 @@ void runAnalysis()
 #else
   gROOT->LoadMacro("AliAnalysisTaskUpcRhoPrime.cxx++g");
   gROOT->LoadMacro("AddTaskUpcRhoPrime.C");
+
   AliAnalysisTaskUpcRhoPrime *task = AddTaskUpcRhoPrime();
 #endif
 
+
   if (!mgr->InitAnalysis())
     return;
+
 
   // mgr->SetDebugLevel(0);
   // mgr->PrintStatus();
@@ -86,8 +102,8 @@ void runAnalysis()
         "AliAnalysisTaskUpcRhoPrime.cxx AliAnalysisTaskUpcRhoPrime.h");
     alienHandler->SetAnalysisSource("AliAnalysisTaskUpcRhoPrime.cxx");
     // select the aliphysics version. all other packages
-    // are LOADED AUTOMATICALLY!
-    alienHandler->SetAliPhysicsVersion("vAN-20181028_ROOT6-1");
+    // are LOADED AUTOMATICALLY!  vAN-20181028_ROOT6-1
+    alienHandler->SetAliPhysicsVersion("vAN-20200621");
     // set the Alien API version
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data
@@ -115,6 +131,7 @@ void runAnalysis()
     //     "296510, 296511, 296512, 296516, 296547, 296548, 296549, 296550, "
     //     "296551, 296552, 296553, 296594, 296615, 296616, 296618, 296619, "
     //     "296621, 296622, 296623 ");
+
     // 2015o
     alienHandler->AddRunList(
         "245145, 245146, 245151, 245152, 245231, 245232, 245259, 245345, "
@@ -157,7 +174,7 @@ void runAnalysis()
     if (gridTest)
     {
       // speficy on how many files you want to run
-      alienHandler->SetNtestFiles(10);
+      alienHandler->SetNtestFiles(100);
       // and launch the analysis
       alienHandler->SetRunMode("test");
       mgr->StartAnalysis("grid");
