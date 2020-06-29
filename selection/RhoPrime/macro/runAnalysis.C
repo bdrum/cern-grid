@@ -17,7 +17,7 @@ void runAnalysis()
 {
 
   Bool_t local = kFALSE;
-  Bool_t gridTest = kTRUE;
+  Bool_t gridTest = kFALSE;
   //  kTRUE
   //  kFALSE
 
@@ -103,7 +103,7 @@ void runAnalysis()
     alienHandler->SetAnalysisSource("AliAnalysisTaskUpcRhoPrime.cxx");
     // select the aliphysics version. all other packages
     // are LOADED AUTOMATICALLY!  vAN-20181028_ROOT6-1
-    alienHandler->SetAliPhysicsVersion("vAN-20200621");
+    alienHandler->SetAliPhysicsVersion("vAN-20200626_ROOT6-1");
     // set the Alien API version
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data
