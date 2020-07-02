@@ -1,3 +1,17 @@
+#include "AliAnalysisAlien.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskUpc4Prongs.h"
+#include "AliESDInputHandler.h"
+#include "AliVEventHandler.h"
+#include "TChain.h"
+#include "TError.h"
+#include "TInterpreter.h"
+#include "TList.h"
+#include "TROOT.h"
+#include "TString.h"
+#include "TTree.h"
+
 AliAnalysisTaskUpc4Prongs *AddTaskUpc4Prongs()
 {
   //--- get the current analysis manager ---//
@@ -28,7 +42,8 @@ AliAnalysisTaskUpc4Prongs *AddTaskUpc4Prongs()
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
-      "FourProngsTree", TTree::Class(), AliAnalysisManager::kOutputContainer, "4prData.root");
+      "DataTree", TTree::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:4Prongs", AliAnalysisManager::GetCommonFileName()));
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);

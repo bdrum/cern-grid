@@ -13,12 +13,17 @@
 #include "TSystem.h"
 #include "/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/AliRoot/v5-09-53-1/ANALYSIS/macros/AddTaskPIDResponse.C"
 
-void runAnalysis()
+ //alias runLocal='aliroot -l -q    "runAnalysis.C(true, false, false, true)"'
+ //alias runGridTest='aliroot -l -q "runAnalysis.C(false, true, false, true)"'
+ //alias runGridFull='aliroot -l -q "runAnalysis.C(false, false, false, true)"'
+ //alias mergeGrid='aliroot -l -q   "runAnalysis.C(false, false, true, true)"'
+ //alias mergeLocal='aliroot -l -q  "runAnalysis.C(false, false, true, false)"'
+
+void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
 {
   //  kTRUE
   //  kFALSE
-  Bool_t local = kFALSE;
-  Bool_t gridTest = kTRUE;
+  //Bool_t mergeJDL = kTRUE;
 
   gSystem->AddIncludePath("-I$ROOTSYS/include");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
@@ -131,21 +136,24 @@ void runAnalysis()
     //     "296551, 296552, 296553, 296594, 296615, 296616, 296618, 296619, "
     //     "296621, 296622, 296623 ");
 
-    // 2015o
+    // 2015o //125 combined from pvn runs and legotrains list. these runs don't contain pass2_ccup... 246540     246858        246859
     alienHandler->AddRunList(
-        "245923, 245146, 245151, 245152, 245231, 245232, 245259, 245345, "
-        "245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, "
-        "245409, 245410, 245411, 245441, 245446, 245450, 245453, 245454, "
-        "245496, 245497, 245501, 245504, 245505, 245507, 245540, 245542, "
-        "245543, 245544, 245545, 245554, 245692, 245702, 245705, 245775, "
-        "245793, 245829, 245831, 245833, 245145, 245949, 245952, 245954, "
-        "246001, 246003, 246012, 246037, 246042, 246048, 246049, 246052, "
-        "246053, 246087, 246089, 246115, 246151, 246152, 246153, 246178, "
-        "246180, 246181, 246182, 246185, 246222, 246225, 246272, 246275, "
-        "246276, 246431, 246434, 246488, 246493, 246495, 246750, 246751, "
-        "246757, 246758, 246759, 246760, 246763, 246765, 246766, 246805, "
-        "246807, 246809, 246810, 246844, 246845, 246846, 246847, 246851, "
-        "246928, 246945, 246948, 246982, 246984, 246989, 246991, 246994");
+        "245145, 245146, 245151, 245152, 245231, 245232, 245259, 245345,"
+        "245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407,"
+        "245409, 245410, 245411, 245441, 245446, 245450, 245453, 245454,"
+        "245496, 245497, 245501, 245504, 245505, 245507, 245540, 245542,"
+        "245543, 245544, 245545, 245554, 245683, 245692, 245700, 245702,"
+        "245705, 245775, 245793, 245829, 245831, 245833, 245923, 245949,"
+        "245952, 245954, 245963, 246001, 246003, 246012, 246036, 246037,"
+        "246042, 246048, 246049, 246052, 246053, 246087, 246089, 246113,"
+        "246115, 246148, 246151, 246152, 246153, 246178, 246180, 246181,"
+        "246182, 246185, 246217, 246222, 246225, 246271, 246272, 246275,"
+        "246276, 246424, 246428, 246431, 246434, 246487, 246488, 246493,"
+        "246495, 246675, 246676, 246750, 246751, 246757, 246758,"
+        "246759, 246760, 246763, 246765, 246766, 246804, 246805, 246807,"
+        "246808, 246809, 246810, 246844, 246845, 246846, 246847, 246851,"
+        "246864, 246865, 246867, 246870, 246871, 246928,"
+        "246945, 246948, 246980, 246982, 246984, 246989, 246991, 246994");
 
     // number of files per subjob
 
@@ -162,7 +170,7 @@ void runAnalysis()
     // (see below) mode, set SetMergeViaJDL(kFALSE)
     // to collect final results
     alienHandler->SetMaxMergeStages(1);
-    alienHandler->SetMergeViaJDL(kTRUE);
+    alienHandler->SetMergeViaJDL(mergeViaJDL);
 
     // define the output folders
     alienHandler->SetGridWorkingDir("4Prongs2015o");
@@ -173,10 +181,15 @@ void runAnalysis()
     if (gridTest)
     {
       // speficy on how many files you want to run
-      alienHandler->SetNtestFiles(100);
+      alienHandler->SetNtestFiles(10);
       // and launch the analysis
       alienHandler->SetRunMode("test");
       mgr->StartAnalysis("grid");
+    }
+    else if (terminate)
+    {
+        alienHandler->SetRunMode("terminate");
+        mgr->StartAnalysis("grid");
     }
     else
     {
