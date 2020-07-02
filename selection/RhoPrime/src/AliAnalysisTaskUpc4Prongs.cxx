@@ -13,11 +13,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include <iostream>
-
+//#include <iostream>
+//
 #include "AliESDVZERO.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
+#include "AliESD.h"
+#include "AliVTrack.h"
 
 #include "TDatabasePDG.h"
 #include "TFile.h"
@@ -28,71 +30,71 @@
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-//#include "AliMultiplicity.h"
-//#include "AliDataFile.h"
-//#include "AliExternalTrackParam.h"
+#include "AliMultiplicity.h"
+#include "AliDataFile.h"
+#include "AliExternalTrackParam.h"
 
-// #include "AliAODEvent.h"
-// #include "AliAODVZERO.h"
-// #include "AliAODZDC.h"
-// #include "AliAODTrack.h"
-// #include "AliAODPid.h"
-// #include "AliAODVertex.h"
-// #include "AliAODMCParticle.h"
-// #include "AliAODMCHeader.h"
+#include "AliAODEvent.h"
+#include "AliAODVZERO.h"
+#include "AliAODZDC.h"
+#include "AliAODTrack.h"
+#include "AliAODPid.h"
+#include "AliAODVertex.h"
+#include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 
 #include "AliESDZDC.h"
 #include "AliPIDResponse.h"
 #include "AliESDVertex.h"
 
-#include "AliAnalysisTaskUpcRhoPrime.h"
-
+#include "AliAnalysisTaskUpc4Prongs.h"
+//
 // TODO: create startup item based on runAnalysis.C macro or even better make from runAnalysis.C startup item
 // TODO: add split for trigger string via ';'
 // TODO: dynamic switch from esd to aod based on input data
-// TODO: add test - comparison of results from local running on ESD data
+// TODO: add tests - comparison of results from local running on ESD data
 
-ClassImp(AliAnalysisTaskUpcRhoPrime);
+ClassImp(AliAnalysisTaskUpc4Prongs);
 
-AliAnalysisTaskUpcRhoPrime::AliAnalysisTaskUpcRhoPrime()
+AliAnalysisTaskUpc4Prongs::AliAnalysisTaskUpc4Prongs()
     : AliAnalysisTaskSE(), fPIDResponse(0), fTriggerName(0), fRhoTree(0),
     BunchCrossNumber(0), OrbitNumber(0), PeriodNumber(0), RunNum(0), Mass(0),
     Q(-10), Pt(0), Rapidity(0), V0Adecision(0), V0Cdecision(0),
     ADAdecision(0), ADCdecision(0), UBAfired(0), UBCfired(0), VBAfired(0),
     VBCfired(0), ZNAenergy(0), ZNCenergy(0), ZPAenergy(0), ZPCenergy(0),
     VtxContrib(0), SpdVtxContrib(0), VtxChi2(0), VtxNDF(0), nTracklets(0), nTracks(0),
-    Phi(0), IsCUP2(0), IsCUP4(0), IsCUP9(0), IsCUP11(0), IsC1ZED(0), T_NumberOfSigmaTPCPion(0),
+    Phi(0), T_NumberOfSigmaTPCPion(0),
     T_NumberOfSigmaTPCElectron(0), T_NumberOfSigmaITSPion(0), T_NumberOfSigmaITSElectron(0),
     T_TPCsignal(0), T_P(0), T_Eta(0), T_Phi(0), T_Px(0), T_Py(0),
     T_Pz(0), T_Q(0), T_HasPointOnITSLayer0(0), T_HasPointOnITSLayer1(0), 
     T_ITSModuleInner(0), T_ITSModuleOuter(0), T_TPCNCls(0), T_ITSNCls(0), T_Dca0(0),
-    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0) {}
+    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0), T_ITSsa(0) {}
 
-AliAnalysisTaskUpcRhoPrime::AliAnalysisTaskUpcRhoPrime(const char* name)
+AliAnalysisTaskUpc4Prongs::AliAnalysisTaskUpc4Prongs(const char* name)
     : AliAnalysisTaskSE(name), fPIDResponse(0), fTriggerName(0), fRhoTree(0),
     BunchCrossNumber(0), OrbitNumber(0), PeriodNumber(0), RunNum(0), Mass(0),
     Q(-10), Pt(0), Rapidity(0), V0Adecision(0), V0Cdecision(0),
     ADAdecision(0), ADCdecision(0), UBAfired(0), UBCfired(0), VBAfired(0),
     VBCfired(0), ZNAenergy(0), ZNCenergy(0), ZPAenergy(0), ZPCenergy(0),
     VtxContrib(0), SpdVtxContrib(0), VtxChi2(0), VtxNDF(0), nTracklets(0), nTracks(0),
-    Phi(0), IsCUP2(0), IsCUP4(0), IsCUP9(0), IsCUP11(0), IsC1ZED(0), T_NumberOfSigmaTPCPion(0),
+    Phi(0), T_NumberOfSigmaTPCPion(0),
     T_NumberOfSigmaTPCElectron(0), T_NumberOfSigmaITSPion(0), T_NumberOfSigmaITSElectron(0), 
     T_TPCsignal(0), T_P(0), T_Eta(0), T_Phi(0), T_Px(0), T_Py(0),
     T_Pz(0), T_Q(0), T_HasPointOnITSLayer0(0), T_HasPointOnITSLayer1(0),
     T_ITSModuleInner(0), T_ITSModuleOuter(0), T_TPCNCls(0), T_ITSNCls(0), T_Dca0(0),
-    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0) {
+    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0), T_ITSsa(0) {
     Init();
     DefineOutput(1, TTree::Class());
     DefineOutput(2, TList::Class());
 }
 
-AliAnalysisTaskUpcRhoPrime::~AliAnalysisTaskUpcRhoPrime()
+AliAnalysisTaskUpc4Prongs::~AliAnalysisTaskUpc4Prongs()
 {
     if (fRhoTree)     { delete fRhoTree;     fRhoTree     = nullptr; }
-    //if (fPIDResponse) { delete fPIDResponse; fPIDResponse = nullptr; }
+    if (fPIDResponse) { delete fPIDResponse; fPIDResponse = nullptr; }
 }
 
-void AliAnalysisTaskUpcRhoPrime::Init()
+void AliAnalysisTaskUpc4Prongs::Init()
 {
     for (Int_t i = 0; i < 3; i++)
     {
@@ -121,7 +123,7 @@ void AliAnalysisTaskUpcRhoPrime::Init()
     TrackHasPointOnITSLayer1.reserve(200);*/
 }
 
-void AliAnalysisTaskUpcRhoPrime::UserCreateOutputObjects()
+void AliAnalysisTaskUpc4Prongs::UserCreateOutputObjects()
 {
     AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
@@ -162,11 +164,6 @@ void AliAnalysisTaskUpcRhoPrime::UserCreateOutputObjects()
     fRhoTree->Branch("VBCfired",                                 &VBCfired,                 "VBCfired/O");
     fRhoTree->Branch("nTracklets",                               &nTracklets,               "nTracklets/I");
     fRhoTree->Branch("nTracks",                                  &nTracks,                  "nTracks/I");
-    fRhoTree->Branch("IsCUP2",                                   &IsCUP2,                   "IsCUP2/O");
-    fRhoTree->Branch("IsCUP4",                                   &IsCUP4,                   "IsCUP4/O");
-    fRhoTree->Branch("IsCUP9",                                   &IsCUP9,                   "IsCUP9/O");
-    fRhoTree->Branch("IsCUP11",                                   &IsCUP11,                 "IsCUP11/O");
-    fRhoTree->Branch("IsC1ZED",                                  &IsC1ZED,                  "IsC1ZED/O");
     //fRhoTree->Branch("ZDCAtime",                               &ZDCAtime,                 "ZDCAtime[4]/F");
     //fRhoTree->Branch("ZDCCtime",                               &ZDCCtime,                 "ZDCCtime[4]/F");
     fRhoTree->Branch("T_NumberOfSigmaITSPion",                   &T_NumberOfSigmaITSPion); //,               "PIDTPCPion[4]/F");
@@ -191,17 +188,17 @@ void AliAnalysisTaskUpcRhoPrime::UserCreateOutputObjects()
     fRhoTree->Branch("T_Dca1",                                   &T_Dca1);
     fRhoTree->Branch("T_TPCRefit",                               &T_TPCRefit);
     fRhoTree->Branch("T_ITSRefit",                               &T_ITSRefit);
+    fRhoTree->Branch("T_ITSsa",                                  &T_ITSsa);
     fRhoTree->Branch("TLets_Theta",                              &T_Lets_Theta);
     fRhoTree->Branch("TLets_Phi",                                &T_Lets_Phi);
     fRhoTree->Branch("T_ITSSensorNum",                           &T_ITSSensorNum);
-
 
     //fRhoTree->Branch("ITSModule",                &ITSModule,                "ITSModule/I");
 
     PostData(1, fRhoTree);
 }
 
-bool AliAnalysisTaskUpcRhoPrime::TrackSelection(AliESDtrack* &trk)
+bool AliAnalysisTaskUpc4Prongs::TrackSelection(AliESDtrack* &trk)
 {
     if (!trk)
         return false;
@@ -231,13 +228,13 @@ bool AliAnalysisTaskUpcRhoPrime::TrackSelection(AliESDtrack* &trk)
     return true;
 }
 
-void AliAnalysisTaskUpcRhoPrime::UserExec(Option_t*)
+void AliAnalysisTaskUpc4Prongs::UserExec(Option_t*)
 {
     AliESDEvent* esd = (AliESDEvent*)InputEvent();
     if (!esd) return;
 
     TString trigger = esd->GetFiredTriggerClasses();
-    if (!(trigger.Contains("CCUP2-B") || trigger.Contains("CCUP4-B") || trigger.Contains("CCUP9-B") || trigger.Contains("C1ZED") || trigger.Contains("CCUP11-B"))) return;
+    if (!trigger.Contains("CCUP9-B")) return;
 
     T_NumberOfSigmaITSPion.clear();
     T_NumberOfSigmaITSElectron.clear();
@@ -287,7 +284,6 @@ void AliAnalysisTaskUpcRhoPrime::UserExec(Option_t*)
     V0Cdecision = fV0data->GetV0CDecision();
 
     if (fADdata)
-
     {
         ADAdecision = fADdata->GetADADecision();
         ADCdecision = fADdata->GetADCDecision();
@@ -345,9 +341,15 @@ void AliAnalysisTaskUpcRhoPrime::UserExec(Option_t*)
     for (Int_t i = 0; i < esd->GetNumberOfTracks(); ++i)
     {
         AliESDtrack* trk = esd->GetTrack(i);
-
+        if (!trk) continue;
         if (!trk->HasPointOnITSLayer(0) && !trk->HasPointOnITSLayer(1)) continue;
 
+        Float_t dca[2] = { 0.0,0.0 }; AliExternalTrackParam cParam;
+        if (!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(), 300., &cParam)) continue;
+        trk->GetImpactParameters(dca[0], dca[1]);
+        if (TMath::Abs(dca[1]) > 2) continue;
+        Double_t cut_DCAxy = (0.0182 + 0.0350 / TMath::Power(trk->Pt(), 1.01));
+        if (TMath::Abs(dca[0]) > cut_DCAxy) continue;
         if (i >= 200) return;
 
         nTracks++;
@@ -359,12 +361,11 @@ void AliAnalysisTaskUpcRhoPrime::UserExec(Option_t*)
         T_HasPointOnITSLayer0.push_back(trk->HasPointOnITSLayer(0));
         T_HasPointOnITSLayer1.push_back(trk->HasPointOnITSLayer(1));
 
-
-
-        T_ITSNCls.push_back(trk->GetITSNcls());
-        T_TPCNCls.push_back(trk->GetTPCNcls());
-        T_TPCRefit.push_back(trk->GetStatus() & trk->kTPCrefit);
-        T_ITSRefit.push_back(trk->GetStatus() & trk->kITSrefit);
+        T_ITSNCls.push_back(trk->GetNumberOfITSClusters());
+        T_TPCNCls.push_back(trk->GetNumberOfTPCClusters());
+        T_TPCRefit.push_back(trk->IsOn(AliESDtrack::kTPCrefit));
+        T_ITSRefit.push_back(trk->IsOn(AliESDtrack::kITSrefit));
+        T_ITSsa.push_back(trk->IsPureITSStandalone());
 
         // TPC&ITS PID n-sigma
         T_NumberOfSigmaTPCElectron.push_back(fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kElectron));
@@ -381,16 +382,8 @@ void AliAnalysisTaskUpcRhoPrime::UserExec(Option_t*)
         T_Py.push_back(trk->Py());
         T_Pz.push_back(trk->Pz());
 
-        Float_t dca[2] = { 0.0,0.0 }; AliExternalTrackParam cParam;
-        if (!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(), 300., &cParam)) continue;
-        trk->GetImpactParameters(dca[0], dca[1]);
-        if (TMath::Abs(dca[1]) > 2) continue;
-        Double_t cut_DCAxy = (0.0182 + 0.0350 / TMath::Power(trk->Pt(), 1.01));
-        if (TMath::Abs(dca[0]) > cut_DCAxy) continue;
-
         T_Dca0.push_back(dca[0]);
         T_Dca1.push_back(dca[1]);
-
 
         ROOT::Math::PxPyPzMVector trackV(trk->Px(), trk->Py(), trk->Pz(), pionMass);
         EventVectors.push_back(trackV);
@@ -427,23 +420,6 @@ void AliAnalysisTaskUpcRhoPrime::UserExec(Option_t*)
     Pt = sumVector.Pt();
     Rapidity = sumVector.Rapidity();
     Phi = sumVector.Phi();
-
-    IsCUP2 = 0;
-    IsCUP4 = 0;
-    IsCUP9 = 0;
-    IsCUP11 = 0;
-    IsC1ZED = 0;
-
-    if (trigger.Contains("CCUP2-B"))
-        IsCUP2 = 1;
-    if (trigger.Contains("CCUP4-B"))
-        IsCUP4 = 1;
-    if (trigger.Contains("CCUP9-B"))
-        IsCUP9 = 1;
-    if (trigger.Contains("CCUP11-B"))
-        IsCUP11 = 1;
-    if (trigger.Contains("C1ZED"))
-        IsC1ZED = 1;
 
     fRhoTree->Fill();
 

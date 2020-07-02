@@ -1,7 +1,7 @@
 #include "AliAnalysisAlien.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskUpcRhoPrime.h"
+#include "AliAnalysisTaskUpc4Prongs.h"
 #include "AliESDInputHandler.h"
 #include "AliVEventHandler.h"
 #include "TChain.h"
@@ -15,11 +15,10 @@
 
 void runAnalysis()
 {
-
-  Bool_t local = kFALSE;
-  Bool_t gridTest = kFALSE;
   //  kTRUE
   //  kFALSE
+  Bool_t local = kFALSE;
+  Bool_t gridTest = kTRUE;
 
   gSystem->AddIncludePath("-I$ROOTSYS/include");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
@@ -38,7 +37,7 @@ void runAnalysis()
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
 #endif
 
-  AliAnalysisManager *mgr = new AliAnalysisManager("RhoPrimeAnalysis");
+  AliAnalysisManager *mgr = new AliAnalysisManager("4ProngsAnalysis");
 
   // AOD
   // AliAODInputHandler *aodH = new AliAODInputHandler();
@@ -56,15 +55,15 @@ void runAnalysis()
   // here we have to differentiate between using the just-in-time compiler
   // from root6, or the interpreter of root5
 #if !defined(__CINT__) || defined(__CLING__)
-  gInterpreter->LoadMacro("AliAnalysisTaskUpcRhoPrime.cxx++g");
-  AliAnalysisTaskUpcRhoPrime *task =
-      reinterpret_cast<AliAnalysisTaskUpcRhoPrime *>(
-          gInterpreter->ExecuteMacro("AddTaskUpcRhoPrime.C"));
+  gInterpreter->LoadMacro("AliAnalysisTaskUpc4Prongs.cxx++g");
+  AliAnalysisTaskUpc4Prongs *task =
+      reinterpret_cast<AliAnalysisTaskUpc4Prongs *>(
+          gInterpreter->ExecuteMacro("AddTaskUpc4Prongs.C"));
 #else
-  gROOT->LoadMacro("AliAnalysisTaskUpcRhoPrime.cxx++g");
-  gROOT->LoadMacro("AddTaskUpcRhoPrime.C");
+  gROOT->LoadMacro("AliAnalysisTaskUpc4Prongs.cxx++g");
+  gROOT->LoadMacro("AddTaskUpc4Prongs.C");
 
-  AliAnalysisTaskUpcRhoPrime *task = AddTaskUpcRhoPrime();
+  AliAnalysisTaskUpc4Prongs *task = AddTaskUpc4Prongs();
 #endif
 
 
@@ -99,10 +98,10 @@ void runAnalysis()
         "-I$ALICE_PHYSICS/include");
     // make sure your source files get copied to grid
     alienHandler->SetAdditionalLibs(
-        "AliAnalysisTaskUpcRhoPrime.cxx AliAnalysisTaskUpcRhoPrime.h");
-    alienHandler->SetAnalysisSource("AliAnalysisTaskUpcRhoPrime.cxx");
+        "AliAnalysisTaskUpc4Prongs.cxx AliAnalysisTaskUpc4Prongs.h");
+    alienHandler->SetAnalysisSource("AliAnalysisTaskUpc4Prongs.cxx");
     // select the aliphysics version. all other packages
-    // are LOADED AUTOMATICALLY!  vAN-20181028_ROOT6-1
+    // are LOADED AUTOMATICALLY!   
     alienHandler->SetAliPhysicsVersion("vAN-20200626_ROOT6-1");
     // set the Alien API version
     alienHandler->SetAPIVersion("V1.1x");
@@ -134,12 +133,12 @@ void runAnalysis()
 
     // 2015o
     alienHandler->AddRunList(
-        "245145, 245146, 245151, 245152, 245231, 245232, 245259, 245345, "
+        "245923, 245146, 245151, 245152, 245231, 245232, 245259, 245345, "
         "245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, "
         "245409, 245410, 245411, 245441, 245446, 245450, 245453, 245454, "
         "245496, 245497, 245501, 245504, 245505, 245507, 245540, 245542, "
         "245543, 245544, 245545, 245554, 245692, 245702, 245705, 245775, "
-        "245793, 245829, 245831, 245833, 245923, 245949, 245952, 245954, "
+        "245793, 245829, 245831, 245833, 245145, 245949, 245952, 245954, "
         "246001, 246003, 246012, 246037, 246042, 246048, 246049, 246052, "
         "246053, 246087, 246089, 246115, 246151, 246152, 246153, 246178, "
         "246180, 246181, 246182, 246185, 246222, 246225, 246272, 246275, "
@@ -151,10 +150,10 @@ void runAnalysis()
     // number of files per subjob
 
     alienHandler->SetSplitMaxInputFileNumber(40);
-    alienHandler->SetExecutable("RhoPrimeTask.sh");
+    alienHandler->SetExecutable("4ProngsTask.sh");
     // specify how many seconds your job may take
     alienHandler->SetTTL(10000);
-    alienHandler->SetJDLName("RhoPrimeTask.jdl");
+    alienHandler->SetJDLName("4ProngsTask.jdl");
 
     alienHandler->SetOutputToRunNo(kTRUE);
     alienHandler->SetKeepLogs(kTRUE);
@@ -166,8 +165,8 @@ void runAnalysis()
     alienHandler->SetMergeViaJDL(kTRUE);
 
     // define the output folders
-    alienHandler->SetGridWorkingDir("RhoPrime2015o");
-    alienHandler->SetGridOutputDir("RhoPrime2015o");
+    alienHandler->SetGridWorkingDir("4Prongs2015o");
+    alienHandler->SetGridOutputDir("4Prongs2015o");
 
     // connect the alien plugin to the manager
     mgr->SetGridHandler(alienHandler);

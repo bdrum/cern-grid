@@ -2,8 +2,8 @@
  * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef ALIANALYSISTASKUPCRHOPRIME_H
-#define ALIANALYSISTASKUPCRHOPRIME_H
+#ifndef AliAnalysisTaskUpc4Prongs_H
+#define AliAnalysisTaskUpc4Prongs_H
 
 class TClonesArray;
 class TFile;
@@ -17,15 +17,14 @@ class AliESDTrack;
 class TBits;
 
 #include "AliAnalysisTaskSE.h"
-#include "AliESDtrack.h"
 #include <vector>
 
-class AliAnalysisTaskUpcRhoPrime : public AliAnalysisTaskSE
+class AliAnalysisTaskUpc4Prongs : public AliAnalysisTaskSE
 {
 public:
-    AliAnalysisTaskUpcRhoPrime(); // = delete;
-    AliAnalysisTaskUpcRhoPrime(const char* name);
-    virtual ~AliAnalysisTaskUpcRhoPrime();
+    AliAnalysisTaskUpc4Prongs(); // = delete;
+    AliAnalysisTaskUpc4Prongs(const char* name);
+    virtual ~AliAnalysisTaskUpc4Prongs();
 
     virtual void Init();
     virtual void UserCreateOutputObjects();
@@ -91,6 +90,7 @@ private:
     std::vector<Short_t> T_Q;
     std::vector<Bool_t>  T_TPCRefit;
     std::vector<Bool_t>  T_ITSRefit;
+    std::vector<Bool_t>  T_ITSsa;
     std::vector<Bool_t>  T_HasPointOnITSLayer0;
     std::vector<Bool_t>  T_HasPointOnITSLayer1;
     std::vector<Int_t>   T_ITSModuleInner;
@@ -102,22 +102,17 @@ private:
     // TODO: Possible good idea is keep fTriggerName in such view
     // TString of "CUP9;CUP2"
     // in this case we could add new triggers from lego train interface
-    Bool_t IsCUP11;
-    Bool_t IsCUP9;
-    Bool_t IsCUP2;
-    Bool_t IsCUP4;
-    Bool_t IsC1ZED;
 
     AliPIDResponse* fPIDResponse;
 
-    AliAnalysisTaskUpcRhoPrime(
-        const AliAnalysisTaskUpcRhoPrime&); // not implemented
-    AliAnalysisTaskUpcRhoPrime&
-        operator=(const AliAnalysisTaskUpcRhoPrime&); // not implemented
+    AliAnalysisTaskUpc4Prongs(
+        const AliAnalysisTaskUpc4Prongs&); // not implemented
+    AliAnalysisTaskUpc4Prongs&
+        operator=(const AliAnalysisTaskUpc4Prongs&); // not implemented
 
     bool TrackSelection(AliESDtrack* &trk);
 
-    ClassDef(AliAnalysisTaskUpcRhoPrime, 2);
+    ClassDef(AliAnalysisTaskUpc4Prongs, 2);
 };
 
 #endif
