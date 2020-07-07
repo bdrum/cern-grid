@@ -4,8 +4,15 @@ masterJobs = [1915137060, 1915137062, 1915137064, 1915137081, 1915137203, 191513
 # runList.reverse()
 subjobs = []
 
+# statuses:
+# ERROR_E
+# EXPIRED
+# ERROR_V 
+
 for job in masterJobs:
-    subjobs.append(os.popen(f'alien.py masterjob {job} -status ERROR_V -printid').readlines())
+    subjobs.append(os.popen(f'alien.py masterjob {job} -status ERROR_E -printid').readlines())
+    ### try to resubmit all (ERROR_SPLT also) without any statuses
+    #os.system(f'alien.py resubmit {job}')
 
 for subjob in subjobs:
     os.system(f'alien.py resubmit {subjob[3][44:-2].replace(",", " ")}')
