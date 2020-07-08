@@ -463,6 +463,22 @@ TODO: add description
 
 #### LEGO trains
 
+##### Own task creation
+
+Для того, чтобы добавить задачу к поезду необходимо добавить её в AliPhysics. Файлы задачи соответствуют файлам необходимым для запуска скрипта в грид, за исключением скрипта запуска.
+
+Первое, что необходимо сделать - форк AliPhysics. Затем нужно добавить свои файлы. Помимо этого их нужно не забыть прописать в CMakeLists.txt группы, а также в LinkDef.
+
+После этого необходимо собрать AliPhysics со своими скриптами для того, чтобы убедиться, что все нормально.
+
+Сборка запускается следующей командой:
+
+> _С clang-10 не работает, так как не пропускает циклы с копиями. [Такая же проблема](https://github.com/intel/media-driver/issues/879)_
+~~~bash
+CC=gcc-9 CXX=g++-9 cmake ../AliPhysics/ -DALIROOT=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/AliRoot/v5-09-53-1 -DROOTSYS=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/ROOT/v6-20-02-alice3-1 -DFASTJET=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/fastjet/v3.2.1_1.024-alice3-1 -DCGAL=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/cgal/4.6.3-1 -DGMP=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/GMP/v6.0.0-1
+~~~
+
+После того, как сборка и установка прошла успешно, можно делать pull request.
 
 ### Receiving results
 
@@ -569,7 +585,9 @@ localFiles=set(localFiles)
 diff = gridFiles - localFiles
 diff = [d.replace('./','4Prongs2015o/4Prongs2015o/')[:-1] for d in diff]
 
-for d in diff[:200]:
+print(len(diff))
+
+for d in diff:
   os.system(f'alien.py cp {d} file:{d[26:]} &')
 ~~~
 
