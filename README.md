@@ -467,15 +467,42 @@ TODO: add description
 
 Для того, чтобы добавить задачу к поезду необходимо добавить её в AliPhysics. Файлы задачи соответствуют файлам необходимым для запуска скрипта в грид, за исключением скрипта запуска.
 
+Инициализация AliPhysics происходит следующим образом 
+
+~~~bash
+aliBuild init AliPhysics@master
+~~~
+
+Это создаст папку AliPhysics с проектом в корневой директории для aliBuild и в дальнейшем для построения будет использован этот код. То есть можно вносить свои изменения.
+
 Первое, что необходимо сделать - форк AliPhysics. Затем нужно добавить свои файлы. Помимо этого их нужно не забыть прописать в CMakeLists.txt группы, а также в LinkDef.
 
 После этого необходимо собрать AliPhysics со своими скриптами для того, чтобы убедиться, что все нормально.
 
-Сборка запускается следующей командой:
+Сборка происходит через AliBuild:
+
+~~~bash
+aliBuild build AliPhysics --defaults user-next-root6 -j 10 -d
+~~~
+
+> **В процессе сборки я постоянно получал ошибки до тех пора пока не изменил cc и c++ на gcc версии 7.5.0**
+
+> **Кроме того после такой замены сборка прошла успешно, но тестирование не прошло по причине отстутствия бибилотеки libAfterImage.so**
+
+Выполнение 
+~~~bash
+sudo apt install libafterimage-dev
+~~~
+
+решило проблему и сборка прошла успешно.
+
+Можно попробовать запустить сборку вручную (хотя зачем) 
+Сборка запускается следующей командой из build диреткории:
 
 > _С clang-10 не работает, так как не пропускает циклы с копиями. [Такая же проблема](https://github.com/intel/media-driver/issues/879)_
+
 ~~~bash
-CC=gcc-9 CXX=g++-9 cmake ../AliPhysics/ -DALIROOT=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/AliRoot/v5-09-53-1 -DROOTSYS=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/ROOT/v6-20-02-alice3-1 -DFASTJET=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/fastjet/v3.2.1_1.024-alice3-1 -DCGAL=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/cgal/4.6.3-1 -DGMP=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/GMP/v6.0.0-1
+CC=gcc-9 CXX=g++-9 cmake /home/bdrum/apps/alice/sw/SOURCES/AliPhysics/v5-09-53-01/v5-09-53-01 -DCMAKE_INSTALL_PREFIX=/home/bdrum/apps/alice/sw/INSTALLROOT/e887a8f7c752451db867a402f4a34bbdeac8f326/ubuntu1804_x86-64/AliPhysics/v5-09-53-01-1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DROOTSYS=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/ROOT/v6-20-02-alice3-1 -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DALIEN=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/AliEn-Runtime/v2-19-le-1 -DFASTJET=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/fastjet/v3.2.1_1.024-alice3-1 -DROOUNFOLD=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/RooUnfold/V02-00-01-alice4-1 -DCGAL=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/cgal/4.6.3-1 -DMPFR=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/MPFR/v3.1.3-1 -DGMP=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/GMP/v6.0.0-1 -DTREELITE_ROOT=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/treelite/a7a0839-1 -DALIROOT=/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/AliRoot/v5-09-53-1
 ~~~
 
 После того, как сборка и установка прошла успешно, можно делать pull request.
