@@ -13,7 +13,8 @@
       "inheritEnvironments": [ "linux_clang_x64" ],
       "wslPath": "C:\\Users\\bdrum\\AppData\\Local\\Microsoft\\WindowsApps\\ubuntu.exe",
       "addressSanitizerRuntimeFlags": "detect_leaks=0",
-      "variables": []
+      "variables": [],
+      "intelliSenseMode": "windows-clang-x64"
     }
   ]
 }

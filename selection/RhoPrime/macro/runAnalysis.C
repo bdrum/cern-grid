@@ -1,7 +1,7 @@
 #include "AliAnalysisAlien.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskUpc4Prongs.h"
+#include "FourProngsTask.h"
 #include "AliESDInputHandler.h"
 #include "AliVEventHandler.h"
 #include "TChain.h"
@@ -21,6 +21,7 @@
 
 void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
 {
+    std::cout << "Run Analysis" << std::endl;
   //  kTRUE
   //  kFALSE
   //Bool_t mergeJDL = kTRUE;
@@ -60,33 +61,39 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
   // here we have to differentiate between using the just-in-time compiler
   // from root6, or the interpreter of root5
 #if !defined(__CINT__) || defined(__CLING__)
-  gInterpreter->LoadMacro("AliAnalysisTaskUpc4Prongs.cxx++g");
-  AliAnalysisTaskUpc4Prongs *task =
-      reinterpret_cast<AliAnalysisTaskUpc4Prongs *>(
+  gInterpreter->LoadMacro("FourProngsTask.cxx++g");
+  FourProngsTask *task =
+      reinterpret_cast<FourProngsTask *>(
           gInterpreter->ExecuteMacro("AddTaskUpc4Prongs.C"));
 #else
-  gROOT->LoadMacro("AliAnalysisTaskUpc4Prongs.cxx++g");
+  gROOT->LoadMacro("FourProngsTask.cxx++g");
   gROOT->LoadMacro("AddTaskUpc4Prongs.C");
 
-  AliAnalysisTaskUpc4Prongs *task = AddTaskUpc4Prongs();
+  FourProngsTask *task = AddTaskUpc4Prongs();
 #endif
-
 
   if (!mgr->InitAnalysis())
     return;
 
-
-  // mgr->SetDebugLevel(0);
-  // mgr->PrintStatus();
-  mgr->SetUseProgressBar(1, 25); // in case of that debug will not use
+  /* mgr->SetDebugLevel(1);
+   mgr->PrintStatus();*/
+   mgr->SetUseProgressBar(1, 25); // in case of that debug will not use
 
   if (local)
   {
     TChain *chain = new TChain("esdTree");
     // add a few files to the chain (change this so that your local files are
     // added)
-    chain->Add(
-        "/mnt/d/GoogleDrive/Job/cern/Alice/analysis/data/RhoPrime/2015/245145.AliESDs.root");
+// chain->Add("/mnt/d/tempFiles/15000246148039.100.root");
+     //chain->Add("/mnt/d/GoogleDrive/Job/cern/Alice/analysis/dev/grid/selection/RhoPrime/macro/seek/files/15000246148021.8209.AliESDs.root");
+   /* chain->Add("/mnt/d/tempFiles/15000246148039.1000.root");
+    chain->Add("/mnt/d/tempFiles/15000246148039.10000.root");
+    chain->Add("/mnt/d/tempFiles/15000246148039.10001.root");
+    chain->Add("/mnt/d/tempFiles/15000246148039.10002.root");
+    chain->Add("/mnt/d/tempFiles/15000246148039.10003.root");
+    chain->Add("/mnt/d/tempFiles/15000246148039.10004.root");*/
+
+    chain->Add("/mnt/d/GoogleDrive/Job/cern/Alice/analysis/data/RhoPrime/2015/245145.AliESDs.root");
 
     // start the analysis locally, reading the events from the tchain
     // for successful analysis should be limited -> 2, 1
@@ -103,8 +110,8 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
         "-I$ALICE_PHYSICS/include");
     // make sure your source files get copied to grid
     alienHandler->SetAdditionalLibs(
-        "AliAnalysisTaskUpc4Prongs.cxx AliAnalysisTaskUpc4Prongs.h");
-    alienHandler->SetAnalysisSource("AliAnalysisTaskUpc4Prongs.cxx");
+        "FourProngsTask.cxx FourProngsTask.h");
+    alienHandler->SetAnalysisSource("FourProngsTask.cxx");
     // select the aliphysics version. all other packages
     // are LOADED AUTOMATICALLY!   
     alienHandler->SetAliPhysicsVersion("vAN-20200626_ROOT6-1");
@@ -114,6 +121,7 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
     // alienHandler->SetGridDataDir("/alice/data/2018/LHC15q");
     // alienHandler->SetDataPattern("/pass1/*/AliESDs.root");
     alienHandler->SetGridDataDir("/alice/data/2015/LHC15o");
+    //alienHandler->SetDataPattern("/pass2_UD_CCUP/15000246148021.82*/AliESDs.root");
     alienHandler->SetDataPattern("/pass2_UD_CCUP/*/AliESDs.root");
     // MC has no prefix, data has prefix 000
     alienHandler->SetRunPrefix("000");
@@ -137,34 +145,19 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
     //     "296621, 296622, 296623 ");
 
     // 2015o //125 combined from pvn runs and legotrains list. these runs don't contain pass2_ccup... 246540     246858        246859
-    alienHandler->AddRunList(
-        "245145, 245146, 245151, 245152, 245231, 245232, 245259, 245345,"
-        "245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407,"
-        "245409, 245410, 245411, 245441, 245446, 245450, 245453, 245454,"
-        "245496, 245497, 245501, 245504, 245505, 245507, 245540, 245542,"
-        "245543, 245544, 245545, 245554, 245683, 245692, 245700, 245702,"
-        "245705, 245775, 245793, 245829, 245831, 245833, 245923, 245949,"
-        "245952, 245954, 245963, 246001, 246003, 246012, 246036, 246037,"
-        "246042, 246048, 246049, 246052, 246053, 246087, 246089, 246113,"
-        "246115, 246148, 246151, 246152, 246153, 246178, 246180, 246181,"
-        "246182, 246185, 246217, 246222, 246225, 246271, 246272, 246275,"
-        "246276, 246424, 246428, 246431, 246434, 246487, 246488, 246493,"
-        "246495, 246675, 246676, 246750, 246751, 246757, 246758,"
-        "246759, 246760, 246763, 246765, 246766, 246804, 246805, 246807,"
-        "246808, 246809, 246810, 246844, 246845, 246846, 246847, 246851,"
-        "246864, 246865, 246867, 246870, 246871, 246928,"
-        "246945, 246948, 246980, 246982, 246984, 246989, 246991, 246994");
+    alienHandler->AddRunList("246148, 246217, 245963, 246424, 245683, 246036, 246487, 246808, 246804, 246271, 245145, 245146, 245151, 245152, 245231, 245232, 245259, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245410, 245411, 245441, 245446, 245450, 245453, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245540, 245542, 245543, 245544, 245545, 245554, 245692, 245700, 245702, 245705, 245775, 245793, 245829, 245831, 245833, 245923, 245949, 245952, 245954, 246001, 246003, 246012, 246037, 246042, 246048, 246049, 246052, 246053, 246087, 246089, 246113, 246115, 246151, 246152, 246153, 246178, 246180, 246181, 246182, 246185, 246222, 246225, 246272, 246275, 246276, 246428, 246431, 246434, 246488, 246493, 246495, 246675, 246676, 246750, 246751, 246757, 246758, 246759, 246760, 246763, 246765, 246766, 246805, 246807, 246809, 246810, 246844, 246845, 246846, 246847, 246851, 246864, 246865, 246867, 246870, 246871, 246928, 246945, 246948, 246980, 246982, 246984, 246989, 246991, 246994");
 
     // number of files per subjob
-
-    alienHandler->SetSplitMaxInputFileNumber(40);
-    alienHandler->SetExecutable("4ProngsTask.sh");
+    // here I tried to specified 40, 77(pvn),100,200,1000
+    // I didn't make detailed analysis, but seems 100(default) gives best results
+    //alienHandler->SetSplitMaxInputFileNumber(200);
+    alienHandler->SetExecutable("FourProngsTask.sh");
     // specify how many seconds your job may take
-    alienHandler->SetTTL(10000);
-    alienHandler->SetJDLName("4ProngsTask.jdl");
+    //alienHandler->SetTTL(10000);
+    alienHandler->SetJDLName("FourProngsTask.jdl");
 
     alienHandler->SetOutputToRunNo(kTRUE);
-    alienHandler->SetKeepLogs(kTRUE);
+    alienHandler->SetKeepLogs(kFALSE);
     // merging: run with kTRUE to merge on grid
     // after re-running the jobs in SetRunMode("terminate")
     // (see below) mode, set SetMergeViaJDL(kFALSE)
