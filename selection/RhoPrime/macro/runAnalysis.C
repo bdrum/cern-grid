@@ -114,7 +114,7 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
     alienHandler->SetAnalysisSource("FourProngsTask.cxx");
     // select the aliphysics version. all other packages
     // are LOADED AUTOMATICALLY!   
-    alienHandler->SetAliPhysicsVersion("vAN-20200626_ROOT6-1");
+    alienHandler->SetAliPhysicsVersion("vAN-20201209_ROOT6-1");
     // set the Alien API version
     alienHandler->SetAPIVersion("V1.1x");
     // select the input data
@@ -174,7 +174,7 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
     if (gridTest)
     {
       // speficy on how many files you want to run
-      alienHandler->SetNtestFiles(10);
+      alienHandler->SetNtestFiles(100);
       // and launch the analysis
       alienHandler->SetRunMode("test");
       mgr->StartAnalysis("grid");

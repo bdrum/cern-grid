@@ -60,29 +60,31 @@ FourProngsTask::FourProngsTask()
     : AliAnalysisTaskSE(), fPIDResponse(0), fTriggerName(0), fRhoTree(0),
     BunchCrossNumber(0), OrbitNumber(0), PeriodNumber(0), RunNum(0), Mass(0),
     Q(-10), Pt(0), Rapidity(0), V0Adecision(0), V0Cdecision(0),
-    ADAdecision(0), ADCdecision(0), UBAfired(0), UBCfired(0), VBAfired(0),
-    VBCfired(0), ZNAenergy(0), ZNCenergy(0), ZPAenergy(0), ZPCenergy(0),
+    ADAdecision(0), ADCdecision(0), V0Afired(0), V0Cfired(0), ADAfired(0), ADCfired(0), STPfired(0),
+    SMBfired(0), SM2fired(0), SH1fired(0), OM2fired(0), OMUfired(0), IsTriggered(0), 
+    ZNAenergy(0), ZNCenergy(0), ZPAenergy(0), ZPCenergy(0),
     VtxContrib(0), SpdVtxContrib(0), VtxChi2(0), VtxNDF(0), nTracklets(0), nTracks(0),
     Phi(0), T_NumberOfSigmaTPCPion(0),
     T_NumberOfSigmaTPCElectron(0), T_NumberOfSigmaITSPion(0), T_NumberOfSigmaITSElectron(0),
     T_TPCsignal(0), T_P(0), T_Eta(0), T_Phi(0), T_Px(0), T_Py(0),
     T_Pz(0), T_Q(0), T_HasPointOnITSLayer0(0), T_HasPointOnITSLayer1(0), 
     T_ITSModuleInner(0), T_ITSModuleOuter(0), T_TPCNCls(0), T_ITSNCls(0), T_Dca0(0),
-    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0) {}
+    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), FORChip(0) {}
 
 FourProngsTask::FourProngsTask(const char* name)
     : AliAnalysisTaskSE(name), fPIDResponse(0), fTriggerName(0), fRhoTree(0),
     BunchCrossNumber(0), OrbitNumber(0), PeriodNumber(0), RunNum(0), Mass(0),
     Q(-10), Pt(0), Rapidity(0), V0Adecision(0), V0Cdecision(0),
-    ADAdecision(0), ADCdecision(0), UBAfired(0), UBCfired(0), VBAfired(0),
-    VBCfired(0), ZNAenergy(0), ZNCenergy(0), ZPAenergy(0), ZPCenergy(0),
-    VtxContrib(0), SpdVtxContrib(0), VtxChi2(0), VtxNDF(0), nTracklets(0), nTracks(0),
-    Phi(0), T_NumberOfSigmaTPCPion(0),
+    ADAdecision(0), ADCdecision(0), V0Afired(0), V0Cfired(0), ADAfired(0), 
+    ADCfired(0), STPfired(0), SMBfired(0), SM2fired(0), SH1fired(0),
+    OM2fired(0), OMUfired(0), IsTriggered(0), ZNAenergy(0), ZNCenergy(0),
+    ZPAenergy(0), ZPCenergy(0), VtxContrib(0), SpdVtxContrib(0), VtxChi2(0),
+    VtxNDF(0), nTracklets(0), nTracks(0), Phi(0), T_NumberOfSigmaTPCPion(0),
     T_NumberOfSigmaTPCElectron(0), T_NumberOfSigmaITSPion(0), T_NumberOfSigmaITSElectron(0), 
     T_TPCsignal(0), T_P(0), T_Eta(0), T_Phi(0), T_Px(0), T_Py(0),
     T_Pz(0), T_Q(0), T_HasPointOnITSLayer0(0), T_HasPointOnITSLayer1(0),
     T_ITSModuleInner(0), T_ITSModuleOuter(0), T_TPCNCls(0), T_ITSNCls(0), T_Dca0(0),
-    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), T_ITSSensorNum(0) {
+    T_Dca1(0), T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), FORChip(0) {
     Init();
     DefineOutput(1, TTree::Class());
 }
@@ -118,10 +120,10 @@ void FourProngsTask::UserCreateOutputObjects()
     fRhoTree->Branch("RunNum",                                   &RunNum,                   "RunNum/I");
     fRhoTree->Branch("PeriodNumber",                             &PeriodNumber,             "PeriodNumber/i");
     fRhoTree->Branch("OrbitNumber",                              &OrbitNumber,              "OrbitNumber/i");
-    fRhoTree->Branch("BunchCrossNumber",                         &BunchCrossNumber,         "BunchCrossNumber/s");
+    fRhoTree->Branch("BunchCrossNumber",                         &BunchCrossNumber,         "BunchCrossNumber/i");
     fRhoTree->Branch("Mass",                                     &Mass,                     "Mass/F");
     fRhoTree->Branch("Pt",                                       &Pt,                       "Pt/F");
-    fRhoTree->Branch("Q",                                        &Q,                        "Q/S");
+    fRhoTree->Branch("Q",                                        &Q,                        "Q/I");
     fRhoTree->Branch("Rapidity",                                 &Rapidity,                 "Rapidity/F");
     fRhoTree->Branch("Phi",                                      &Phi,                      "Phi/F");
     fRhoTree->Branch("ZNAenergy",                                &ZNAenergy,                "ZNAenergy/F");
@@ -142,10 +144,20 @@ void FourProngsTask::UserCreateOutputObjects()
     fRhoTree->Branch("V0Cdecision",                              &V0Cdecision,              "V0Cdecision/I");
     fRhoTree->Branch("ADAdecision",                              &ADAdecision,              "ADAdecision/I");
     fRhoTree->Branch("ADCdecision",                              &ADCdecision,              "ADCdecision/I");
-    fRhoTree->Branch("UBAfired",                                 &UBAfired,                 "UBAfired/O");
-    fRhoTree->Branch("UBCfired",                                 &UBCfired,                 "UBCfired/O");
-    fRhoTree->Branch("VBAfired",                                 &VBAfired,                 "VBAfired/O");
-    fRhoTree->Branch("VBCfired",                                 &VBCfired,                 "VBCfired/O");
+    
+    fRhoTree->Branch("V0Afired",                                 &V0Afired,                 "V0Afired/O");
+    fRhoTree->Branch("V0Cfired",                                 &V0Cfired,                 "V0Cfired/O");
+    fRhoTree->Branch("ADAfired",                                 &ADAfired,                 "ADAfired/O");
+    fRhoTree->Branch("ADCfired",                                 &ADCfired,                 "ADCfired/O");
+    fRhoTree->Branch("STPfired",                                 &STPfired,                 "STPfired/O");
+    fRhoTree->Branch("SMBfired",                                 &SMBfired,                 "SMBfired/O");
+    fRhoTree->Branch("SM2fired",                                 &SM2fired,                 "SM2fired/O");
+    fRhoTree->Branch("SH1fired",                                 &SH1fired,                 "SH1fired/O");
+    fRhoTree->Branch("OM2fired",                                 &OM2fired,                 "OM2fired/O");
+    fRhoTree->Branch("OMUfired",                                 &OMUfired,                 "OMUfired/O");
+    fRhoTree->Branch("IsTriggered",                              &IsTriggered,              "IsTriggered/O");
+
+    
     fRhoTree->Branch("nTracklets",                               &nTracklets,               "nTracklets/I");
     fRhoTree->Branch("nTracks",                                  &nTracks,                  "nTracks/I");
     //fRhoTree->Branch("ZDCAtime",                               &ZDCAtime,                 "ZDCAtime[4]/F");
@@ -174,7 +186,7 @@ void FourProngsTask::UserCreateOutputObjects()
     fRhoTree->Branch("T_ITSRefit",                               &T_ITSRefit);
     fRhoTree->Branch("TLets_Theta",                              &T_Lets_Theta);
     fRhoTree->Branch("TLets_Phi",                                &T_Lets_Phi);
-    fRhoTree->Branch("T_ITSSensorNum",                           &T_ITSSensorNum);
+    fRhoTree->Branch("FORChip",                                  &FORChip);
 
     PostData(1, fRhoTree);
 }
@@ -212,8 +224,8 @@ void FourProngsTask::UserExec(Option_t*)
     T_ITSModuleOuter.clear();
     T_Lets_Theta.clear();
     T_Lets_Phi.clear();
-    T_ITSSensorNum.clear();
-
+    FORChip.clear();
+    IsTriggered = kFALSE;
     nTracks = 0;
     Q = 0;
 
@@ -241,11 +253,6 @@ void FourProngsTask::UserExec(Option_t*)
         ADAdecision = fADdata->GetADADecision();
         ADCdecision = fADdata->GetADCDecision();
     }
-
-    UBAfired = esd->GetHeader()->IsTriggerInputFired("0UBA");
-    UBCfired = esd->GetHeader()->IsTriggerInputFired("0UBC");
-    VBAfired = esd->GetHeader()->IsTriggerInputFired("0VBA");
-    VBCfired = esd->GetHeader()->IsTriggerInputFired("0VBC");
 
     // ZN energy
     ZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
@@ -306,7 +313,7 @@ void FourProngsTask::UserExec(Option_t*)
         if (trk->IsPureITSStandalone()) continue;
         if (trk->GetNumberOfITSClusters() < 3) continue;
 
-        if (nTracks >= 200) break;
+        //if (nTracks >= 200) break;
 
         //std::cout << i << " | " << dca[0] << " | " << dca[1] << " | " << trk->GetNumberOfITSClusters() << " | " << trk->HasPointOnITSLayer(0) << " | " << trk->HasPointOnITSLayer(1) << std::endl;
 
@@ -349,9 +356,12 @@ void FourProngsTask::UserExec(Option_t*)
 
     if (nTracks < 4) return;
 
+
+    IsTriggered = CheckEventTrigger(esd);
+
     for (Int_t chipkey = 0; chipkey < 1200; chipkey++) {
         if (esd->GetMultiplicity()->TestFastOrFiredChips(chipkey)) 
-            T_ITSSensorNum.push_back(chipkey / 5);
+            FORChip.push_back(chipkey);
     }
 
     ROOT::Math::PxPyPzMVector sumVector;
@@ -368,4 +378,129 @@ void FourProngsTask::UserExec(Option_t*)
     PostData(1, fRhoTree);
 
 } // UserExec
+
+
+Bool_t FourProngsTask::Is0STPfired(Int_t *vPhiInner, Int_t *vPhiOuter) // array 20, 40
+{
+	Int_t fired(0);
+	 for (Int_t i(0); i<10; ++i) {
+	 	for (Int_t j(0); j<2; ++j) {
+			const Int_t k(2*i+j);
+	 		fired += ((   vPhiOuter[k]    || vPhiOuter[k+1]       ||
+	                    vPhiOuter[k+2]      )
+	                && (vPhiOuter[k+20] || vPhiOuter[(k+21)%40] ||
+	                    vPhiOuter[(k+22)%40])
+	                && (vPhiInner[i]    || vPhiInner[i+1]       )
+	                && (vPhiInner[i+10] || vPhiInner[(i+11)%20]));
+	    }
+	  	}
+	if (fired != 0) return kTRUE;
+	else return kFALSE;
+}
+
+// return kTRUE if CCUP9 triggered was fired
+Bool_t FourProngsTask::CheckEventTrigger(AliESDEvent *esd)
+{
+	V0Afired = kFALSE;
+	V0Cfired = kFALSE;
+	ADAfired = kFALSE;
+	ADCfired = kFALSE;
+	STPfired = kFALSE;
+	SMBfired = kFALSE;
+	SM2fired = kFALSE;
+	SH1fired = kFALSE;
+	OM2fired = kFALSE;
+	OMUfired = kFALSE;
+
+	//SPD inputs
+	// Int_t bcMod4 = 0;
+	// if (isUsingEffi) bcMod4 = TMath::Nint(hBCmod4->GetRandom());
+	
+    AliMultiplicity* mult = esd->GetMultiplicity();
+	Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
+	Int_t vPhiOuter[40]; for (Int_t i=0; i<40; ++i) vPhiOuter[i]=0;
+
+	Int_t nInner(0), nOuter(0);
+
+	for (Int_t i(0); i<1200; ++i)
+	{
+		// Double_t eff = 1;
+		// if (isUsingEffi) eff = hSPDeff->GetBinContent(1+i, 1+bcMod4);
+	
+    	Bool_t isFired = (mult->TestFastOrFiredChips(i)); //&& (gRandom->Uniform(0,1) < eff);
+		if (i<400)
+		{
+			vPhiInner[i/20] += isFired;
+			nInner += isFired;
+		}
+		else
+		{
+			vPhiOuter[(i-400)/20] += isFired;
+			nOuter += isFired;
+		}
+	}
+
+	// 0STP
+	STPfired = Is0STPfired(vPhiInner,vPhiOuter);
+	// 0SMB - At least one hit in SPD
+	if (nOuter > 0 || nInner > 0) SMBfired = kTRUE;
+	// 0SM2 - Two hits on outer layer
+	if (nOuter > 1) SM2fired = kTRUE;
+	// 0SH1 - More then 6 hits on outer layer
+	// if (nOuter >= 7) SH1 = kTRUE;
+	//0SH1 2017 - Two hits on inner and outer layer
+	if (nInner >= 2 && nOuter >= 2) SH1fired = kTRUE;
+
+	// V0
+	V0Afired = esd->GetHeader()->IsTriggerInputFired("0VBA");
+	V0Cfired = esd->GetHeader()->IsTriggerInputFired("0VBC");
+	// AD
+	ADAfired = esd->GetHeader()->IsTriggerInputFired("0UBA");
+	ADCfired = esd->GetHeader()->IsTriggerInputFired("0UBC");
+	// TOF
+	OMUfired = esd->GetHeader()->IsTriggerInputFired("0OMU");
+
+	// OM2
+	// if (isUsingTOFeff) {
+	// const AliTOFHeader *tofH = esd->GetTOFHeader();
+	// fTOFmask = tofH->GetTriggerMask();
+  
+	// Bool_t firedMaxiPhi[36] = {0};
+	// Int_t NfiredMaxiPads = 0;
+ 
+	// for(Int_t ltm=0;ltm<72;ltm++){
+		// Int_t ip = ltm%36;
+		// for(Int_t cttm=0;cttm<23;cttm++){
+			// if(fTOFmask->IsON(ltm,cttm) && gRandom->Rndm(1.0)<hTOFeff->GetBinContent(ltm+1,cttm+1)){
+				// firedMaxiPhi[ip] = kTRUE;
+				// NfiredMaxiPads++;
+			// }
+		// }
+	// }
+	// if(NfiredMaxiPads >= 2) {
+		// OM2 = kTRUE; //0OM2 TOF two hits
+	// }
+
+	// }
+	// else OM2 = esd->GetHeader()->IsTriggerInputFired("0OM2");
+	OM2fired = esd->GetHeader()->IsTriggerInputFired("0OM2");
+
+	// save spd and tof trigger decisions to tree
+	// TriggerSPD_T = SH1;
+	// TriggerTOF_T = OM2;
+
+	if ((fTriggerName == "CCUP9-B") && (!V0Afired && !V0Cfired && !ADAfired && !ADCfired && STPfired)) 
+        return kTRUE; // CCUP9 is fired
+	else return kFALSE;
+
+	// if (fOption.Contains("17n")) {
+	// 	if ((fTriggerName.Contains("CCUP2")) && (!V0Afired && !V0Cfired)) return kTRUE; // CCUP2 in 17n
+	// 	}
+	// else {
+	// 	if ((fTriggerName.Contains("CCUP2")) && (!V0Afired && !V0Cfired && SM2fired && OM2fired)) return kTRUE; // CCUP2 is fired works only in 2015
+	// }
+	// if ((fTriggerName == "CCUP4-B") && (!V0A && !V0C && SM2 && OMU)) return kTRUE; // CCUP4 is fired works only in 2015
+
+	// else return kFALSE;
+} // end of MC trigger
 

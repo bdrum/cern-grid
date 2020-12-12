@@ -34,70 +34,47 @@ public:
     void SetTrigger(TString _fTriggerName) { fTriggerName = _fTriggerName; }
 
 private:
-    Bool_t Is0STPfired(Int_t*, Int_t*);
 
     TString fTriggerName;
 
-    // tree
     TTree* fRhoTree;
-    // tree variables and branches
-    Int_t RunNum;
-    UShort_t BunchCrossNumber;
-    UInt_t OrbitNumber;
-    UInt_t PeriodNumber;
-    Float_t Mass;
-    Float_t Pt;
+ 
+    // event params
+ 
+    
+    UInt_t  RunNum, BunchCrossNumber, OrbitNumber, PeriodNumber;
+    Float_t Mass, Pt, Rapidity, Phi;
     Short_t Q;
-    Float_t Rapidity;
-    Int_t V0Adecision;
-    Int_t V0Cdecision;
-    Int_t ADAdecision;
-    Int_t ADCdecision;
-    Bool_t UBAfired;
-    Bool_t UBCfired;
-    Bool_t VBAfired;
-    Bool_t VBCfired;
-    Float_t ZNAenergy;
-    Float_t ZNCenergy;
-    Float_t ZPAenergy;
-    Float_t ZPCenergy;
-    Int_t VtxContrib;
+ 
+    Int_t  V0Adecision, V0Cdecision, ADAdecision, ADCdecision;
+
+  	Bool_t V0Afired, V0Cfired, ADAfired, ADCfired, STPfired,\
+           SMBfired, SM2fired, SH1fired, OM2fired, OMUfired,\
+           IsTriggered;
+
+    std::vector<Int_t>   FORChip;
+	
+    Float_t ZNAenergy, ZNCenergy, ZPAenergy, ZPCenergy;
+
+    Int_t   VtxContrib;
     Float_t VtxChi2, VtxNDF;
-    Int_t SpdVtxContrib;
-    Int_t nTracklets;
-    Int_t nTracks;
-    Float_t Phi;
-    Float_t Vertex[3];
-    Float_t SpdVertex[3];
-    Float_t ZDCAtime[4];
-    Float_t ZDCCtime[4];
+    Int_t   SpdVtxContrib;
 
-    std::vector<Float_t> T_NumberOfSigmaITSPion;
-    std::vector<Float_t> T_NumberOfSigmaITSElectron;
-    std::vector<Float_t> T_NumberOfSigmaTPCPion;
-    std::vector<Float_t> T_NumberOfSigmaTPCElectron;
-    std::vector<Int_t>   T_TPCsignal;
-    std::vector<Int_t>   T_TPCNCls;
-    std::vector<Int_t>   T_ITSNCls;
-    std::vector<Float_t> T_P;
-    std::vector<Float_t> T_Eta;
-    std::vector<Float_t> T_Phi;
-    std::vector<Float_t> T_Px;
-    std::vector<Float_t> T_Py;
-    std::vector<Float_t> T_Pz;
-    std::vector<Float_t> T_Dca0;
-    std::vector<Float_t> T_Dca1;
-    std::vector<Short_t> T_Q;
-    std::vector<Bool_t>  T_TPCRefit;
-    std::vector<Bool_t>  T_ITSRefit;
-    std::vector<Bool_t>  T_HasPointOnITSLayer0;
-    std::vector<Bool_t>  T_HasPointOnITSLayer1;
-    std::vector<Int_t>   T_ITSModuleInner;
-    std::vector<Int_t>   T_ITSModuleOuter;
-    std::vector<Float_t> T_Lets_Theta;
-    std::vector<Float_t> T_Lets_Phi;
-    std::vector<Int_t>   T_ITSSensorNum;
+    Int_t nTracklets, nTracks;
 
+    Float_t Vertex[3], SpdVertex[3], ZDCAtime[4], ZDCCtime[4];
+
+    // track params
+
+    std::vector<Float_t> T_NumberOfSigmaITSPion,T_NumberOfSigmaITSElectron,\
+                         T_NumberOfSigmaTPCPion, T_NumberOfSigmaTPCElectron,\
+                         T_P, T_Eta, T_Phi, T_Px, T_Py, T_Pz,\
+                         T_Dca0, T_Dca1, T_Lets_Theta, T_Lets_Phi; 
+
+    std::vector<Bool_t>  T_TPCRefit, T_ITSRefit,  T_HasPointOnITSLayer0,  T_HasPointOnITSLayer1;
+    
+    std::vector<Int_t>   T_ITSModuleInner, T_ITSModuleOuter, T_TPCsignal, T_TPCNCls, T_ITSNCls, T_Q;
+   
     AliPIDResponse* fPIDResponse;
 
     FourProngsTask(
@@ -105,7 +82,10 @@ private:
     FourProngsTask&
         operator=(const FourProngsTask&); // not implemented
 
-    ClassDef(FourProngsTask, 3);
+    Bool_t Is0STPfired(Int_t *, Int_t *);
+    Bool_t CheckEventTrigger(AliESDEvent *);
+
+    ClassDef(FourProngsTask, 4);
 };
 
 #endif
