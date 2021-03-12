@@ -22,7 +22,6 @@
 #include "AliFemtoSpherocityEventCut.h"
 #include "AliFemtoBasicEventCut.h" 
 #include "AliFemtoESDTrackCut.h" 
-#include "AliFemtoESDTrackCutMinusJets.h" 
 //#include "AliFemtoKKTrackCut.h"
 #include "AliFemtoKpm45TrackCut.h"
 #include "AliFemtoCorrFctn.h"
@@ -33,7 +32,6 @@
 #include "AliFemtoCutMonitorEventMult.h"
 #include "AliFemtoCutMonitorEventVertex.h"
 #include "AliFemtoCutMonitorEventSphericity.h"
-#include "AliFemtoCutMonitorDphiDeta.h"
 #include "AliFemtoShareQualityTPCEntranceSepPairCut.h"
 #include "AliFemtoPairCutAntiGamma.h"
 #include "AliFemtoPairCutRadialDistance.h"
@@ -78,12 +76,17 @@
 
 #include <TH1.h>
 
+#include "/mnt/d/GoogleDrive/Job/cern/Alice/analysis/dev/grid/selection/lm/AliFemtoESDTrackCutMinusJets.h" 
+
+// #include "AliFemtoESDTrackCutMinusJets.h" 
+#include "AliFemtoCutMonitorDphiDeta.h"
 
 
 #endif
 
 //________________________________________________________________________
 AliFemtoManager* ConfigFemtoAnalysis() {
+
 
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
@@ -291,10 +294,6 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	if (runch[ichg]) {
 	  aniter = ichg*cMu+imult; //0, 1(ich=0) ,2,3
 
-
-	
-
-
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 8, multbins[imult], multbins[imult+1]);
 	  anetaphitpc[aniter]->SetNumEventsToMix(10);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
@@ -337,7 +336,6 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	   cutFailEvSpher[aniter] = new AliFemtoCutMonitorEventSphericity(Form("cutFail%stpcM%i", chrgs[ichg], imult));
 	   mecetaphitpc[aniter]->AddCutMonitor(cutPassEvSpher[aniter], cutFailEvSpher[aniter]);
 	  
-	  
 	   cutPassDphiDeta[aniter] = new AliFemtoCutMonitorDphiDeta(Form("cutPass%stpcM%i", chrgs[ichg], imult));
 	   cutFailDphiDeta[aniter] = new AliFemtoCutMonitorDphiDeta(Form("cutFail%stpcM%i", chrgs[ichg], imult));
 	   mecetaphitpc[aniter]->AddCutMonitor(cutPassDphiDeta[aniter], cutFailDphiDeta[aniter]);	  
@@ -354,11 +352,12 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 //           dtc1etaphitpc[aniter] = new AliFemtoKKTrackCutTest();
 
 	   // dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
+
 	   dtc1etaphitpc[aniter] = new AliFemtoESDTrackCutMinusJets();
            
            dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(true);
-	   dtc1etaphitpc[aniter]->AddCutMonitor(cutPassDphiDeta[aniter]);
-           dtc1etaphitpc[aniter]->AddCutMonitor(cutFailDphiDeta[aniter]);
+	         dtc1etaphitpc[aniter]->AddCutMonitorPass(cutPassDphiDeta[aniter]);
+           dtc1etaphitpc[aniter]->AddCutMonitorFail(cutFailDphiDeta[aniter]);
            dtc1etaphitpc[aniter]->SetNsigma(3.0);
            
            
@@ -514,8 +513,9 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	  
 	  // cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),24, 24);
 	  // anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
-	  
+
 	  Manager->AddAnalysis(anetaphitpc[aniter]);	
+
 	}
       }
     }

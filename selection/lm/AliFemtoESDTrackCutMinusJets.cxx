@@ -47,9 +47,9 @@
 #include "AliFemtoESDTrackCutMinusJets.h"
 #include <cstdio>
 
+ClassImp(AliFemtoESDTrackCutMinusJets);
 #ifdef __ROOT__
   /// \cond CLASSIMP
-ClassImp(AliFemtoESDTrackCutMinusJets,1);
   /// \endcond
 #endif
 
@@ -120,6 +120,7 @@ AliFemtoESDTrackCutMinusJets::AliFemtoESDTrackCutMinusJets():
     fElectronRejection(0)
 {
   // Default constructor
+  ::Info("AliFemtoESDTrackCutMinusJets", "Default constructor");
   fPt[0]=0.0;              fPt[1] = 100.0;//100
   fRapidity[0]=-2;       fRapidity[1]=2;//-2 2
   fEta[0]=-2;       fEta[1]=2;//-2 2
@@ -141,14 +142,10 @@ AliFemtoESDTrackCutMinusJets::~AliFemtoESDTrackCutMinusJets()
 //------------------------------
 bool AliFemtoESDTrackCutMinusJets::Pass(const AliFemtoTrack* track)
 {
-  //cout<<"AliFemtoESDTrackCutMinusJets::Pass"<<endl;
-
+  ::Info("AliFemtoESDTrackCutMinusJets:Pass", "Start");
   // test the particle and return
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
-
-
-
 
   if (fStatus && (track->Flags() & fStatus) != fStatus) {
     return false;
@@ -550,7 +547,6 @@ bool AliFemtoESDTrackCutMinusJets::Pass(const AliFemtoTrack* track)
   }
 
 
-
   ////  ML ///////////////////////////////////////
   
   //Difference between leading particle and other particles
@@ -568,8 +564,8 @@ bool AliFemtoESDTrackCutMinusJets::Pass(const AliFemtoTrack* track)
    if (currentMonitor)
    {
       etamax  = currentMonitor->fEtamax; 
-      phimax = currentMonitor->fPhimax;
-      ptmax = currentMonitor->fPtmax;
+      phimax  = currentMonitor->fPhimax;
+      ptmax   = currentMonitor->fPtmax;
    }
 
    double tPhi = track->P().Phi();

@@ -49,7 +49,7 @@
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-ClassImp(AliFemtoESDTrackCutPlusJets,1);
+ClassImp(AliFemtoESDTrackCutPlusJets);
   /// \endcond
 #endif
 

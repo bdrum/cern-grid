@@ -41,7 +41,7 @@ AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnaly
     return NULL;
   }  
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  cout << "Found " <<type << " event handler" << endl;
+  ::Info("AddTaskFemto", TString::Format("Found %s event handler", type.Data()));
 
   // C. Create the task, add it to manager.
   //===========================================================================
@@ -78,5 +78,7 @@ AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnaly
    mgr->ConnectOutput(taskfemto, 0, cout_femto);
 
    // Return task pointer at the end
+  ::Info("AddTaskFemto", "The task has created.");
+
    return taskfemto;
 }

@@ -11,7 +11,7 @@
 #include "TString.h"
 #include "TTree.h"
 #include "TSystem.h"
-#include "/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/AliRoot/v5-09-53-1/ANALYSIS/macros/AddTaskPIDResponse.C"
+#include "/mnt/d/Sources/cern/alice/sw/ubuntu1804_x86-64/AliRoot/master-1/ANALYSIS/macros/AddTaskPIDResponse.C"
 
  //alias runLocal='aliroot -l -q    "runAnalysis.C(true, false, false, true)"'
  //alias runGridTest='aliroot -l -q "runAnalysis.C(false, true, false, true)"'
@@ -53,7 +53,7 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
   AliESDInputHandler *esdH = new AliESDInputHandler();
   mgr->SetInputEventHandler(esdH);
 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  gROOT->LoadMacro("AddTaskPIDResponse.C");
 
   AddTaskPIDResponse();
 

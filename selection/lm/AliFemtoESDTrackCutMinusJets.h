@@ -12,7 +12,6 @@
 
 #include <utility>
 
-
 /// \class AliFemtoESDTrackCutMinusJets
 /// \brief A basic track cut that used information from ALICE ESD to accept or reject the track.
 ///
@@ -179,7 +178,7 @@ protected:   // here are the quantities I want to cut on...
   float             fMaxPforTPCpid;  ///< momentum till which TPC PID is requested
   float             fMinPforITSpid;  ///< momentum from which ITS PID is requested
   float             fMaxPforITSpid;  ///< momentum till which ITS PID is requested
-  bool fElectronRejection;
+  bool              fElectronRejection;
 
   float PidFractionElectron(float mom) const;
   float PidFractionPion(float mom) const;
@@ -204,9 +203,6 @@ protected:   // here are the quantities I want to cut on...
   bool IsAlphaTOFTime(float mom, float ttof);
   //
 
-
-
-  
   bool IsKaonTPCdEdxNSigma(float mom, float nsigma);
   bool IsKaonTOFNSigma(float mom, float nsigma);
   bool IsKaonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
@@ -223,10 +219,9 @@ protected:   // here are the quantities I want to cut on...
   
   Bool_t CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2); //the same as in AliESDtrackCuts
 
-
+  ClassDef(AliFemtoESDTrackCutMinusJets,3);
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoESDTrackCutMinusJets,1);
   /// \endcond
 #endif
 };

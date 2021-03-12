@@ -58,6 +58,8 @@ double  fEtamax;
 private: 
   TH2D *fDPhiDEta;  ///< Difference between leading particle and other particles
 
+ ClassDef(AliFemtoCutMonitorDphiDeta, 1);
+
 };
 
 

@@ -41,13 +41,13 @@ FourProngsTask *AddTaskUpc4Prongs()
 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(
       "DataTree", TTree::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:4Prongs", AliAnalysisManager::GetCommonFileName()));
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
-  mgr->ConnectOutput(task, 1, coutput1);
+  mgr->ConnectOutput(task, 1, coutput);
   // mgr->ConnectOutput(task, 2, coutput2);
 
   return task;
