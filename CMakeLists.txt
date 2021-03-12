@@ -17,24 +17,30 @@ include(${ROOT_USE_FILE})
 include_directories(${ROOT_INCLUDE_DIRS})
 link_directories(${ROOT_LIBRARIES})
 
-set( ALIROOT /home/bdrum/apps/alice/sw/ubuntu1804_x86-64/AliRoot/v5-09-53-1 )
+# set( ALIROOT /home/bdrum/apps/alice/sw/ubuntu1804_x86-64/AliRoot/v5-09-53-1 )
 
-find_program(ALIROOT_EXE NAMES aliroot PATHS ${ALIROOT}/bin NO_DEFAULT_PATH)
+find_program(ALIROOT_EXE NAMES aliroot PATHS $ENV{ALICE_ROOT}/bin NO_DEFAULT_PATH)
   
 mark_as_advanced(ALIROOT_EXE)
   
 include_directories(
-    ${ALIROOT}/include
-    ${ALIROOT}/include/pythia
+    $ENV{ALICE_ROOT}/include
+    $ENV{ALICE_ROOT}/include/pythia
 )
 
-link_directories(${ALIROOT}/lib)
+link_directories($ENV{ALICE_ROOT}/lib)
     
-include(${ALIROOT}/etc/AliRoot-config.cmake)
+include($ENV{ALICE_ROOT}/etc/AliRoot-config.cmake)
 message(STATUS "Found AliRoot version : \"${AliRoot_VERSION}\", git hash : \"${AliRoot_REVISION}\"")
 
-include_directories( /home/bdrum/apps/alice/sw/ubuntu1804_x86-64/ROOT/latest/include)
-link_directories(/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/ROOT/latest/lib)
+
+include_directories($ENV{ALICE_PHYSICS}/include)
+link_directories($ENV{ALICE_PHYSICS}/lib)
+    
+message(STATUS "Found AliPhysics version : \"${ALIPHYSICS_VERSION}\", release : \"${ALIPHYSICS_RELEASE}\"")
+
+# include_directories( /home/bdrum/apps/alice/sw/ubuntu1804_x86-64/ROOT/latest/include)
+# link_directories(/home/bdrum/apps/alice/sw/ubuntu1804_x86-64/ROOT/latest/lib)
 
 add_subdirectory(selection)
 add_subdirectory(utils)
