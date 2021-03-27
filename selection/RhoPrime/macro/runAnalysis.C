@@ -1,30 +1,29 @@
+#include "/mnt/d/Sources/cern/alice/sw/ubuntu1804_x86-64/AliRoot/latest/ANALYSIS/macros/AddTaskPIDResponse.C"
 #include "AliAnalysisAlien.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
-#include "FourProngsTask.h"
 #include "AliESDInputHandler.h"
 #include "AliVEventHandler.h"
+#include "FourProngsTask.h"
 #include "TChain.h"
 #include "TError.h"
 #include "TInterpreter.h"
 #include "TROOT.h"
 #include "TString.h"
-#include "TTree.h"
 #include "TSystem.h"
-#include "/mnt/d/Sources/cern/alice/sw/ubuntu1804_x86-64/AliRoot/master-1/ANALYSIS/macros/AddTaskPIDResponse.C"
+#include "TTree.h"
 
- //alias runLocal='aliroot -l -q    "runAnalysis.C(true, false, false, true)"'
- //alias runGridTest='aliroot -l -q "runAnalysis.C(false, true, false, true)"'
- //alias runGridFull='aliroot -l -q "runAnalysis.C(false, false, false, true)"'
- //alias mergeGrid='aliroot -l -q   "runAnalysis.C(false, false, true, true)"'
- //alias mergeLocal='aliroot -l -q  "runAnalysis.C(false, false, true, false)"'
+// alias runLocal='aliroot -l -q    "runAnalysis.C(true, false, false, true)"'
+// alias runGridTest='aliroot -l -q "runAnalysis.C(false, true, false, true)"'
+// alias runGridFull='aliroot -l -q "runAnalysis.C(false, false, false, true)"'
+// alias mergeGrid='aliroot -l -q   "runAnalysis.C(false, false, true, true)"'
+// alias mergeLocal='aliroot -l -q  "runAnalysis.C(false, false, true, false)"'
 
-void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
-{
-    std::cout << "Run Analysis" << std::endl;
+void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL) {
+  std::cout << "Run Analysis" << std::endl;
   //  kTRUE
   //  kFALSE
-  //Bool_t mergeJDL = kTRUE;
+  // Bool_t mergeJDL = kTRUE;
 
   gSystem->AddIncludePath("-I$ROOTSYS/include");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
@@ -62,9 +61,8 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
   // from root6, or the interpreter of root5
 #if !defined(__CINT__) || defined(__CLING__)
   gInterpreter->LoadMacro("FourProngsTask.cxx++g");
-  FourProngsTask *task =
-      reinterpret_cast<FourProngsTask *>(
-          gInterpreter->ExecuteMacro("AddTaskUpc4Prongs.C"));
+  FourProngsTask *task = reinterpret_cast<FourProngsTask *>(
+      gInterpreter->ExecuteMacro("AddTaskUpc4Prongs.C"));
 #else
   gROOT->LoadMacro("FourProngsTask.cxx++g");
   gROOT->LoadMacro("AddTaskUpc4Prongs.C");
@@ -75,33 +73,31 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
   if (!mgr->InitAnalysis())
     return;
 
-  /* mgr->SetDebugLevel(1);
-   mgr->PrintStatus();*/
-   mgr->SetUseProgressBar(1, 25); // in case of that debug will not use
+  // mgr->SetDebugLevel(1);
+  // mgr->PrintStatus();
+  mgr->SetUseProgressBar(1, 25); // in case of that debug will not use
 
-  if (local)
-  {
+  if (local) {
     TChain *chain = new TChain("esdTree");
     // add a few files to the chain (change this so that your local files are
     // added)
-// chain->Add("/mnt/d/tempFiles/15000246148039.100.root");
-     //chain->Add("/mnt/d/GoogleDrive/Job/cern/Alice/analysis/dev/grid/selection/RhoPrime/macro/seek/files/15000246148021.8209.AliESDs.root");
-   /* chain->Add("/mnt/d/tempFiles/15000246148039.1000.root");
-    chain->Add("/mnt/d/tempFiles/15000246148039.10000.root");
-    chain->Add("/mnt/d/tempFiles/15000246148039.10001.root");
-    chain->Add("/mnt/d/tempFiles/15000246148039.10002.root");
-    chain->Add("/mnt/d/tempFiles/15000246148039.10003.root");
-    chain->Add("/mnt/d/tempFiles/15000246148039.10004.root");*/
+    // chain->Add("/mnt/d/tempFiles/15000246148039.100.root");
+    // chain->Add("/mnt/d/GoogleDrive/Job/cern/Alice/analysis/dev/grid/selection/RhoPrime/macro/seek/files/15000246148021.8209.AliESDs.root");
+    /* chain->Add("/mnt/d/tempFiles/15000246148039.1000.root");
+     chain->Add("/mnt/d/tempFiles/15000246148039.10000.root");
+     chain->Add("/mnt/d/tempFiles/15000246148039.10001.root");
+     chain->Add("/mnt/d/tempFiles/15000246148039.10002.root");
+     chain->Add("/mnt/d/tempFiles/15000246148039.10003.root");
+     chain->Add("/mnt/d/tempFiles/15000246148039.10004.root");*/
 
-    chain->Add("/mnt/d/GoogleDrive/Job/cern/Alice/analysis/data/RhoPrime/2015/245145.AliESDs.root");
+    chain->Add("/mnt/d/GoogleDrive/Job/cern/Alice/analysis/data/RhoPrime/2015/"
+               "245145.AliESDs.root");
 
     // start the analysis locally, reading the events from the tchain
     // for successful analysis should be limited -> 2, 1
     // without it seg viol
     mgr->StartAnalysis("local", chain);
-  }
-  else
-  {
+  } else {
     // if we want to run on grid, we create and configure the plugin
     AliAnalysisAlien *alienHandler = new AliAnalysisAlien();
     // also specify the include (header) paths on grid
@@ -109,11 +105,10 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
         "-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include "
         "-I$ALICE_PHYSICS/include");
     // make sure your source files get copied to grid
-    alienHandler->SetAdditionalLibs(
-        "FourProngsTask.cxx FourProngsTask.h");
+    alienHandler->SetAdditionalLibs("FourProngsTask.cxx FourProngsTask.h");
     alienHandler->SetAnalysisSource("FourProngsTask.cxx");
     // select the aliphysics version. all other packages
-    // are LOADED AUTOMATICALLY!   
+    // are LOADED AUTOMATICALLY!
     alienHandler->SetAliPhysicsVersion("vAN-20201209_ROOT6-1");
     // set the Alien API version
     alienHandler->SetAPIVersion("V1.1x");
@@ -121,7 +116,7 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
     // alienHandler->SetGridDataDir("/alice/data/2018/LHC15q");
     // alienHandler->SetDataPattern("/pass1/*/AliESDs.root");
     alienHandler->SetGridDataDir("/alice/data/2015/LHC15o");
-    //alienHandler->SetDataPattern("/pass2_UD_CCUP/15000246148021.82*/AliESDs.root");
+    // alienHandler->SetDataPattern("/pass2_UD_CCUP/15000246148021.82*/AliESDs.root");
     alienHandler->SetDataPattern("/pass2_UD_CCUP/*/AliESDs.root");
     // MC has no prefix, data has prefix 000
     alienHandler->SetRunPrefix("000");
@@ -144,16 +139,34 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
     //     "296551, 296552, 296553, 296594, 296615, 296616, 296618, 296619, "
     //     "296621, 296622, 296623 ");
 
-    // 2015o //125 combined from pvn runs and legotrains list. these runs don't contain pass2_ccup... 246540     246858        246859
-    alienHandler->AddRunList("246148, 246217, 245963, 246424, 245683, 246036, 246487, 246808, 246804, 246271, 245145, 245146, 245151, 245152, 245231, 245232, 245259, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245410, 245411, 245441, 245446, 245450, 245453, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245540, 245542, 245543, 245544, 245545, 245554, 245692, 245700, 245702, 245705, 245775, 245793, 245829, 245831, 245833, 245923, 245949, 245952, 245954, 246001, 246003, 246012, 246037, 246042, 246048, 246049, 246052, 246053, 246087, 246089, 246113, 246115, 246151, 246152, 246153, 246178, 246180, 246181, 246182, 246185, 246222, 246225, 246272, 246275, 246276, 246428, 246431, 246434, 246488, 246493, 246495, 246675, 246676, 246750, 246751, 246757, 246758, 246759, 246760, 246763, 246765, 246766, 246805, 246807, 246809, 246810, 246844, 246845, 246846, 246847, 246851, 246864, 246865, 246867, 246870, 246871, 246928, 246945, 246948, 246980, 246982, 246984, 246989, 246991, 246994");
+    // 2015o //125 combined from pvn runs and legotrains list. these runs don't
+    // contain pass2_ccup... 246540     246858        246859
+    alienHandler->AddRunList(
+        "246148, 246217, 245963, 246424, 245683, 246036, 246487, 246808, "
+        "246804, 246271, 245145, 245146, 245151, 245152, 245231, 245232, "
+        "245259, 245345, 245346, 245347, 245349, 245353, 245396, 245397, "
+        "245401, 245407, 245409, 245410, 245411, 245441, 245446, 245450, "
+        "245453, 245454, 245496, 245497, 245501, 245504, 245505, 245507, "
+        "245540, 245542, 245543, 245544, 245545, 245554, 245692, 245700, "
+        "245702, 245705, 245775, 245793, 245829, 245831, 245833, 245923, "
+        "245949, 245952, 245954, 246001, 246003, 246012, 246037, 246042, "
+        "246048, 246049, 246052, 246053, 246087, 246089, 246113, 246115, "
+        "246151, 246152, 246153, 246178, 246180, 246181, 246182, 246185, "
+        "246222, 246225, 246272, 246275, 246276, 246428, 246431, 246434, "
+        "246488, 246493, 246495, 246675, 246676, 246750, 246751, 246757, "
+        "246758, 246759, 246760, 246763, 246765, 246766, 246805, 246807, "
+        "246809, 246810, 246844, 246845, 246846, 246847, 246851, 246864, "
+        "246865, 246867, 246870, 246871, 246928, 246945, 246948, 246980, "
+        "246982, 246984, 246989, 246991, 246994");
 
     // number of files per subjob
     // here I tried to specified 40, 77(pvn),100,200,1000
-    // I didn't make detailed analysis, but seems 100(default) gives best results
-    //alienHandler->SetSplitMaxInputFileNumber(200);
+    // I didn't make detailed analysis, but seems 100(default) gives best
+    // results
+    // alienHandler->SetSplitMaxInputFileNumber(200);
     alienHandler->SetExecutable("FourProngsTask.sh");
     // specify how many seconds your job may take
-    //alienHandler->SetTTL(10000);
+    // alienHandler->SetTTL(10000);
     alienHandler->SetJDLName("FourProngsTask.jdl");
 
     alienHandler->SetOutputToRunNo(kTRUE);
@@ -171,21 +184,16 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL)
 
     // connect the alien plugin to the manager
     mgr->SetGridHandler(alienHandler);
-    if (gridTest)
-    {
+    if (gridTest) {
       // speficy on how many files you want to run
       alienHandler->SetNtestFiles(100);
       // and launch the analysis
       alienHandler->SetRunMode("test");
       mgr->StartAnalysis("grid");
-    }
-    else if (terminate)
-    {
-        alienHandler->SetRunMode("terminate");
-        mgr->StartAnalysis("grid");
-    }
-    else
-    {
+    } else if (terminate) {
+      alienHandler->SetRunMode("terminate");
+      mgr->StartAnalysis("grid");
+    } else {
       // else launch the full grid analysis
       alienHandler->SetRunMode("full");
       mgr->StartAnalysis("grid");

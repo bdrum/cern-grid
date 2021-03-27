@@ -18,11 +18,20 @@ _These notes are result of my work in this direction_
       - [Physics](#physics)
       - [Triggers](#triggers)
     - [Running analysis](#running-analysis)
+      - [Parameters](#parameters)
+        - [SetSplitMaxInputFileNumber(100);](#setsplitmaxinputfilenumber100)
+        - [SetTTL(10000);](#setttl10000)
+        - [SetOutputToRunNo(kTRUE);](#setoutputtorunnoktrue)
+        - [SetKeepLogs(kFALSE);](#setkeeplogskfalse)
       - [Locally](#locally)
       - [Grid test](#grid-test)
       - [Grid full](#grid-full)
       - [LEGO trains](#lego-trains)
+        - [Own task creation](#own-task-creation)
     - [Receiving results](#receiving-results)
+    - [Killing jobs](#killing-jobs)
+    - [Resubmiting jobs](#resubmiting-jobs)
+    - [Seeking ESD file with some event](#seeking-esd-file-with-some-event)
 
 ## Data access
 
@@ -501,7 +510,7 @@ aliBuild init AliPhysics@master
 Сборка происходит через AliBuild:
 
 ~~~bash
-aliBuild build AliPhysics --defaults user-next-root6 -j 10 -d
+aliBuild build AliPhysics --defaults user-next-root6 --disable roounfold -j 10 -d
 ~~~
 
 > **В процессе сборки я постоянно получал ошибки до тех пора пока не изменил cc и c++ на gcc версии 7.5.0**

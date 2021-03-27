@@ -1,4 +1,4 @@
-///
+  ///
 /// \file AliFemtoESDTrackCut.h
 ///
 
@@ -125,8 +125,6 @@ public:
   std::pair<float, float> GetITSpidMomentumRange() const { return std::make_pair(fMinPforITSpid, fMaxPforITSpid); }
 
   bool GetElectronRejection() const { return fElectronRejection; }
-
-
 
 protected:   // here are the quantities I want to cut on...
 

@@ -1,4 +1,4 @@
-/* Copyright(c) 1998-2020, ALICE Experiment at CERN, All rights reserved. *
+/* Copyright(c) 1998-2021, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice */
 /* $Id$ */
 
@@ -19,73 +19,78 @@ class TBits;
 #include "AliAnalysisTaskSE.h"
 #include <vector>
 
-class FourProngsTask : public AliAnalysisTaskSE
-{
+class FourProngsTask : public AliAnalysisTaskSE {
 public:
-    FourProngsTask(); // = delete;
-    FourProngsTask(const char* name);
-    virtual ~FourProngsTask();
+  FourProngsTask(); // = delete;
+  FourProngsTask(const char *name);
+  virtual ~FourProngsTask();
 
-    virtual void Init();
-    virtual void UserCreateOutputObjects();
-    virtual void UserExec(Option_t* option);
-    virtual void Terminate(Option_t*) {};
+  virtual void Init();
+  virtual void UserCreateOutputObjects();
+  virtual void UserExec(Option_t *option);
+  virtual void Terminate(Option_t *){};
 
-    void SetTrigger(TString _fTriggerName) { fTriggerName = _fTriggerName; }
+  void SetTrigger(TString _fTriggerName) { fTriggerName = _fTriggerName; }
 
 private:
+  TString fTriggerName;
 
-    TString fTriggerName;
+  TTree *fRhoTree;
+  TTree *fStartedRunsTree;
 
-    TTree* fRhoTree;
- 
-    // event params
- 
-    
-    UInt_t  RunNum, BunchCrossNumber, OrbitNumber, PeriodNumber;
-    Float_t Mass, Pt, Rapidity, Phi;
-    Short_t Q;
- 
-    Int_t  V0Adecision, V0Cdecision, ADAdecision, ADCdecision;
+  // event params
 
-  	Bool_t V0Afired, V0Cfired, ADAfired, ADCfired, STPfired,\
-           SMBfired, SM2fired, SH1fired, OM2fired, OMUfired,\
-           IsTriggered;
+  uint RunNum, BunchCrossNumber, OrbitNumber, PeriodNumber;
+  float Mass, Pt, Rapidity, Phi;
+  short Q;
 
-    std::vector<Int_t>   FORChip;
-	
-    Float_t ZNAenergy, ZNCenergy, ZPAenergy, ZPCenergy;
+  int V0Adecision, V0Cdecision, ADAdecision, ADCdecision;
 
-    Int_t   VtxContrib;
-    Float_t VtxChi2, VtxNDF;
-    Int_t   SpdVtxContrib;
+  bool V0Afired, V0Cfired, ADAfired, ADCfired, STPfired, SMBfired, SM2fired,
+      SH1fired, OM2fired, OMUfired, IsTriggered;
 
-    Int_t nTracklets, nTracks;
+  std::vector<int> FORChip;
+  int StartedRuns;
 
-    Float_t Vertex[3], SpdVertex[3], ZDCAtime[4], ZDCCtime[4];
+  float ZNAenergy, ZNCenergy, ZPAenergy, ZPCenergy;
 
-    // track params
+  int VtxContrib;
+  float VtxChi2, VtxNDF;
+  int SpdVtxContrib;
 
-    std::vector<Float_t> T_NumberOfSigmaITSPion,T_NumberOfSigmaITSElectron,\
-                         T_NumberOfSigmaTPCPion, T_NumberOfSigmaTPCElectron,\
-                         T_P, T_Eta, T_Phi, T_Px, T_Py, T_Pz,\
-                         T_Dca0, T_Dca1, T_Lets_Theta, T_Lets_Phi; 
+  int nTracklets, nTracks;
 
-    std::vector<Bool_t>  T_TPCRefit, T_ITSRefit,  T_HasPointOnITSLayer0,  T_HasPointOnITSLayer1;
-    
-    std::vector<Int_t>   T_ITSModuleInner, T_ITSModuleOuter, T_TPCsignal, T_TPCNCls, T_ITSNCls, T_Q;
-   
-    AliPIDResponse* fPIDResponse;
+  float Vertex[3], SpdVertex[3], ZDCAtime[4], ZDCCtime[4];
 
-    FourProngsTask(
-        const FourProngsTask&); // not implemented
-    FourProngsTask&
-        operator=(const FourProngsTask&); // not implemented
+  // event params
 
-    Bool_t Is0STPfired(Int_t *, Int_t *);
-    Bool_t CheckEventTrigger(AliESDEvent *);
+  // track params
 
-    ClassDef(FourProngsTask, 4);
+  std::vector<float> T_NumberOfSigmaITSPion, T_NumberOfSigmaITSElectron,
+      T_NumberOfSigmaTPCPion, T_NumberOfSigmaTPCElectron, T_P, T_Eta, T_Phi,
+      T_Px, T_Py, T_Pz, T_Dca0, T_Dca1, T_Lets_Theta, T_Lets_Phi;
+
+  std::vector<bool> T_TPCRefit, T_ITSRefit, T_HasPointOnITSLayer0,
+      T_HasPointOnITSLayer1;
+
+  std::vector<int> T_ITSModuleInner, T_ITSModuleOuter, T_TPCsignal, T_TPCNCls,
+      T_ITSNCls, T_Q;
+
+  // track params
+
+  AliPIDResponse *fPIDResponse;
+
+  FourProngsTask(const FourProngsTask &);            // not implemented
+  FourProngsTask &operator=(const FourProngsTask &); // not implemented
+
+  bool Is0STPfired(int *, int *);
+  bool CheckEventTrigger(AliESDEvent *);
+
+  void ClearTracksVectors();
+  void ReserveTracksVectors(int size);
+  void ShrinkToFitTracksVectors();
+
+  ClassDef(FourProngsTask, 5);
 };
 
 #endif

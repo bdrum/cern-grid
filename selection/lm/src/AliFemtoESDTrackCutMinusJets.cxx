@@ -143,6 +143,7 @@ AliFemtoESDTrackCutMinusJets::~AliFemtoESDTrackCutMinusJets()
 bool AliFemtoESDTrackCutMinusJets::Pass(const AliFemtoTrack* track)
 {
   ::Info("AliFemtoESDTrackCutMinusJets:Pass", "Start");
+  std::cout << "AliFemtoESDTrackCutMinusJets:Pass has started" << std::endl;
   // test the particle and return
   // true if it meets all the criteria
   // false if it doesn't meet at least one of the criteria
