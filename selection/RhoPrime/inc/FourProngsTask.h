@@ -21,7 +21,7 @@ class TBits;
 
 class FourProngsTask : public AliAnalysisTaskSE {
 public:
-  FourProngsTask(); // = delete;
+  FourProngsTask();
   FourProngsTask(const char *name);
   virtual ~FourProngsTask();
 

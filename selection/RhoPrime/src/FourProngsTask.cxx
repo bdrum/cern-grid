@@ -371,6 +371,9 @@ void FourProngsTask::UserExec(Option_t *) {
   if (nTracks < 4)
     return;
 
+  std::cout << RunNum << " | " << PeriodNumber << " | " << OrbitNumber
+            << std::endl;
+
   IsTriggered = CheckEventTrigger(esd);
 
   for (Int_t chipkey = 0; chipkey < 1200; chipkey++) {
