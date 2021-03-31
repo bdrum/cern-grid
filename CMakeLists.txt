@@ -45,3 +45,22 @@ message(STATUS "Found AliPhysics version : \"${ALIPHYSICS_VERSION}\", release : 
 add_subdirectory(selection)
 add_subdirectory(utils)
 
+
+# add_custom_target(gfull COMMAND aliroot -l -q "runAnalysis.C(false, false, false, true)")
+# add_custom_target(gtest COMMAND aliroot -l -q "runAnalysis.C(false, true, false, true)")
+# add_custom_target(local COMMAND aliroot -l -q "runAnalysis.C(true, false, false, true)")
+
+# add_custom_target(merge_grid  COMMAND aliroot -l -q "runAnalysis.C(false, false, true, true)")
+# add_custom_target(merge_local COMMAND aliroot -l -q "runAnalysis.C(false, false, true, false)")
+
+# add_custom_command(
+#         TARGET local POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy
+#                 ${CMAKE_SOURCE_DIR}/selection/RhoPrime/macro/runAnalysis.C
+#                 ${CMAKE_CURRENT_BINARY_DIR}/runAnalysis.C)
+
+# add_custom_command(
+#         TARGET local POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy
+#                 ${CMAKE_SOURCE_DIR}/selection/RhoPrime/macro/AddTaskUpc4Prongs.C
+#                 ${CMAKE_CURRENT_BINARY_DIR}/AddTaskUpc4Prongs.C)

@@ -1,26 +1,12 @@
 #include "/mnt/d/Sources/cern/alice/sw/ubuntu1804_x86-64/AliRoot/latest/ANALYSIS/macros/AddTaskPIDResponse.C"
-#include "AliAnalysisAlien.h"
-#include "AliAnalysisDataContainer.h"
-#include "AliAnalysisManager.h"
-#include "AliESDInputHandler.h"
-#include "AliVEventHandler.h"
-#include "FourProngsTask.h"
-#include "TChain.h"
-#include "TError.h"
-#include "TInterpreter.h"
-#include "TROOT.h"
-#include "TString.h"
-#include "TSystem.h"
-#include "TTree.h"
 
-// alias runLocal='aliroot -l -q    "runAnalysis.C(true, false, false, true)"'
+// alias runLocal='aliroot    -l -q "runAnalysis.C(true, false, false, true)"'
 // alias runGridTest='aliroot -l -q "runAnalysis.C(false, true, false, true)"'
 // alias runGridFull='aliroot -l -q "runAnalysis.C(false, false, false, true)"'
-// alias mergeGrid='aliroot -l -q   "runAnalysis.C(false, false, true, true)"'
-// alias mergeLocal='aliroot -l -q  "runAnalysis.C(false, false, true, false)"'
+// alias mergeGrid='aliroot   -l -q "runAnalysis.C(false, false, true, true)"'
+// alias mergeLocal='aliroot  -l -q "runAnalysis.C(false, false, true, false)"'
 
 void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL) {
-  std::cout << "Run Analysis" << std::endl;
   //  kTRUE
   //  kFALSE
   // Bool_t mergeJDL = kTRUE;
@@ -73,9 +59,9 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL) {
   if (!mgr->InitAnalysis())
     return;
 
-  mgr->SetDebugLevel(1);
-  mgr->PrintStatus();
-  // mgr->SetUseProgressBar(1, 25); // in case of that debug will not use
+  // mgr->SetDebugLevel(1);
+  // mgr->PrintStatus();
+  mgr->SetUseProgressBar(1, 25); // in case of that debug will not use
 
   if (local) {
     TChain *chain = new TChain("esdTree");
@@ -186,7 +172,7 @@ void runAnalysis(bool local, bool gridTest, bool terminate, bool mergeViaJDL) {
     mgr->SetGridHandler(alienHandler);
     if (gridTest) {
       // speficy on how many files you want to run
-      alienHandler->SetNtestFiles(100000);
+      alienHandler->SetNtestFiles(10);
       // and launch the analysis
       alienHandler->SetRunMode("test");
       mgr->StartAnalysis("grid");

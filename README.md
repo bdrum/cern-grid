@@ -29,6 +29,8 @@ _These notes are result of my work in this direction_
       - [LEGO trains](#lego-trains)
         - [Own task creation](#own-task-creation)
     - [Receiving results](#receiving-results)
+      - [Grid merging](#grid-merging)
+      - [Hand mode](#hand-mode)
     - [Killing jobs](#killing-jobs)
     - [Resubmiting jobs](#resubmiting-jobs)
     - [Seeking ESD file with some event](#seeking-esd-file-with-some-event)
@@ -529,7 +531,8 @@ CC=gcc-9 CXX=g++-9 cmake /home/bdrum/apps/alice/sw/SOURCES/AliPhysics/v5-09-53-0
 
 ### Receiving results
 
-После завершения работы скрипта в гриде. Данные появятся в домашней директории aliensh в той иерархии, которая была задана в скрипте. Кстати на место в aliensh существуют квоты, заполнение своей квоты можно узнать так:
+После завершения работы скрипта в гриде. Данные появятся в домашней директории aliensh в той иерархии, которая была задана в скрипте.
+Стоит отметить, что на место в aliensh существуют квоты, заполнение своей квоты можно узнать так:
 
 ![1](https://sun9-69.userapi.com/c857120/v857120643/16ef2f/FD6W0wwjXw8.jpg)
 
@@ -553,6 +556,33 @@ Number of files :               177397.0/300000.0 --> 59.13%
 alien.py find 4Prongs2015o AnalysisResults.root | wc -l
 #34200
 ~~~
+
+#### Grid merging
+
+Так как данные хранятся во множестве рут файлов, то и обработанные данные, в идеале должны повторять их число. Для анализа эти данные необходимо собрать в один файл или смерджить.
+Для этого существует специальный режим в гриде, который мерджит результаты анализа в два этапа:
+
+- Мерджинг в гриде. Чтобы не копировать множество файлов к себе на компьютер, проще сразу их смерджить в один файл в гриде, для этого нужно в скрипте для запуска выполнить следующие команды:
+
+~~~cpp
+//...
+alienHandler->SetMaxMergeStages(1); // параметр, который как-то влияет на количество объединяемых файлов , написано, что в случае больших файлов, его можно увеличить
+alienHandler->SetMergeViaJDL(true); // говорит о том, что надо смерджить результаты в гриде
+alienHandler->SetRunMode("terminate"); 
+mgr->StartAnalysis("grid");
+~~~
+
+Глобальный мерджинг видно как задачу в monalisa. После того, как задача завершена, файл можно скопировать на свой компьютер с помощью того же скрипта и таких же команд, но с небольшими изменениями:
+
+~~~cpp
+//...
+alienHandler->SetMaxMergeStages(1); // в этом случае тут всегда 1 как я понимаю
+alienHandler->SetMergeViaJDL(false); // говорит о том, что собранный результат надо скопировать на компьютер
+alienHandler->SetRunMode("terminate"); 
+mgr->StartAnalysis("grid");
+~~~
+
+#### Hand mode
 
 Для того, чтобы копировать данные на локальную машину необходимо воспользоваться одной из команд
 
