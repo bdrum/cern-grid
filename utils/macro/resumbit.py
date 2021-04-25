@@ -2,28 +2,50 @@ import os
 import argparse
 
 parser = argparse.ArgumentParser(
-    description='Resubmitting jobs with different statuses.')
+    description="Resubmitting jobs with different statuses."
+)
 
-parser.add_argument('-i', metavar='--error-index', type=int, nargs=1,
-                    help='Specify index of the error status from the list [ERROR_V, ERROR_E, EXPIRED, ERROR_SPLT].')
+statuses = [
+    "ERROR_V",
+    "ERROR_E",
+    "ERROR_IB",
+    "ERROR_SV",
+    "ERROR_RE",
+    "EXPIRED",
+    "ZOMBIE",
+    "ERROR_SPLT",
+]
+parser.add_argument(
+    "-i",
+    metavar="--error-index",
+    type=int,
+    nargs=1,
+    help=f"Specify index of the error status from the list {statuses}.",
+)
 
 i = parser.parse_args().i[0]
 
-masterJobs = [2074443928, 2074443947, 2074443981, 2074444106, 2074444131, 2074444170, 2074444264, 2074444318, 2074444353, 2074444354, 2074444356, 2074444357, 2074444818, 2074444945, 2074444949, 2074444968, 2074445098, 2074445193, 2074445247, 2074445306, 2074445451, 2074445478, 2074445480, 2074445482, 2074445546, 2074445587, 2074445588, 2074445590, 2074445665, 2074445761, 2074445812, 2074445852, 2074445894, 2074445949, 2074446024, 2074446057, 2074446108, 2074446149, 2074446194, 2074446264, 2074446273, 2074446274, 2074446311, 2074446385, 2074446443, 2074446477, 2074446479, 2074446480, 2074446482, 2074446497, 2074446578, 2074446598, 2074446608, 2074446609, 2074446610, 2074446612, 2074446613, 2074446617, 2074446624, 2074446629, 2074446673,
-              2074446803, 2074446849, 2074446850, 2074446851, 2074446854, 2074446888, 2074446921, 2074446922, 2074446932, 2074447020, 2074447159, 2074447307, 2074447413, 2074447565, 2074447705, 2074447768, 2074447821, 2074447889, 2074447948, 2074448013, 2074448068, 2074448166, 2074448274, 2074448345, 2074448347, 2074448360, 2074448377, 2074448379, 2074448380, 2074448382, 2074448436, 2074448492, 2074448532, 2074448552, 2074448554, 2074448556, 2074448579, 2074448640, 2074448654, 2074448655, 2074448656, 2074448657, 2074448658, 2074448698, 2074448735, 2074448781, 2074448806, 2074448841, 2074448843, 2074448845, 2074448903, 2074448905, 2074448907, 2074448963, 2074449016, 2074449054, 2074449055, 2074449086, 2074449143, 2074449167, 2074449270, 2074449365, 2074449448]
 
-# runList.reverse()
+masterJobs = []
+
+with open("masterjobs", "r") as m:
+    for mj_id in m.readlines():
+        masterJobs.append(int(mj_id))
+
+if not masterJobs:
+    raise LookupError("Nothing in masterjob file or can't parse it.")
+
 subjobs = []
 
-statuses = ['ERROR_V', 'ERROR_E', 'EXPIRED', 'ERROR_SPLT']
 status = statuses[i]
 
 for job in masterJobs:
-    if status != 'ERROR_SPLT':
+    if status != "ERROR_SPLT":
         subjobs.append(
-            os.popen(f'alien.py masterjob {job} -status {status} -printid').readlines())
+            os.popen(f"alien.py masterjob {job} -status {status} -printid").readlines()
+        )
     else:
-        os.system(f'alien.py resubmit {job}')
+        os.system(f"alien.py resubmit {job}")
 
 for subjob in subjobs:
     os.system(f'alien.py resubmit {subjob[3][44:-2].replace(",", " ")}')

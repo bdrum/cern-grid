@@ -87,6 +87,7 @@ FourProngsTask::FourProngsTask(const char *name)
       T_ITSModuleOuter(0), T_TPCNCls(0), T_ITSNCls(0), T_Dca0(0), T_Dca1(0),
       T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), FORChip(0),
       StartedRuns(0) {
+
   DefineInput(0, TChain::Class());
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TTree::Class());
@@ -114,7 +115,6 @@ void FourProngsTask::Init() {
     ZDCAtime[i] = -1717.;
     ZDCCtime[i] = -1717.;
   }
-
   ZDCAtime[3] = -1717.;
   ZDCCtime[3] = -1717.;
 
@@ -176,8 +176,17 @@ void FourProngsTask::UserCreateOutputObjects() {
 
   fRhoTree->Branch("nTracklets", &nTracklets, "nTracklets/I");
   fRhoTree->Branch("nTracks", &nTracks, "nTracks/I");
-  // fRhoTree->Branch("ZDCAtime",                               &ZDCAtime,
-  // "ZDCAtime[4]/F"); fRhoTree->Branch("ZDCCtime", &ZDCCtime, "ZDCCtime[4]/F");
+
+  fRhoTree->Branch("ZDCAtime_0", &ZDCAtime[0], "ZDCAtime_0/F");
+  fRhoTree->Branch("ZDCAtime_1", &ZDCAtime[1], "ZDCAtime_1/F");
+  fRhoTree->Branch("ZDCAtime_2", &ZDCAtime[2], "ZDCAtime_2/F");
+  fRhoTree->Branch("ZDCAtime_3", &ZDCAtime[3], "ZDCAtime_3/F");
+
+  fRhoTree->Branch("ZDCCtime_0", &ZDCCtime[0], "ZDCCtime_0/F");
+  fRhoTree->Branch("ZDCCtime_1", &ZDCCtime[1], "ZDCCtime_1/F");
+  fRhoTree->Branch("ZDCCtime_2", &ZDCCtime[2], "ZDCCtime_2/F");
+  fRhoTree->Branch("ZDCCtime_3", &ZDCCtime[3], "ZDCCtime_3/F");
+
   fRhoTree->Branch("T_NumberOfSigmaITSPion", &T_NumberOfSigmaITSPion);
   fRhoTree->Branch("T_NumberOfSigmaITSElectron", &T_NumberOfSigmaITSElectron);
   fRhoTree->Branch("T_NumberOfSigmaTPCPion", &T_NumberOfSigmaTPCPion);
@@ -269,11 +278,10 @@ void FourProngsTask::UserExec(Option_t *) {
   Int_t detChZNA = fZDCdata->GetZNATDCChannel();
   Int_t detChZNC = fZDCdata->GetZNCTDCChannel();
 
-  /* for (Int_t i = 0; i < 4; i++)
-   {
-       ZDCAtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNA, i);
-       ZDCCtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNC, i);
-   }*/
+  for (auto i = 0; i < 4; ++i) {
+    ZDCAtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNA, i);
+    ZDCCtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNC, i);
+  }
 
   // primary vertex
   VtxContrib = fESDVertex->GetNContributors();
@@ -320,8 +328,6 @@ void FourProngsTask::UserExec(Option_t *) {
       continue;
     if (trk->GetNumberOfITSClusters() < 3)
       continue;
-
-    // if (nTracks >= 200) break;
 
     // std::cout << i << " | " << dca[0] << " | " << dca[1] << " | " <<
     // trk->GetNumberOfITSClusters() << " | " << trk->HasPointOnITSLayer(0) << "

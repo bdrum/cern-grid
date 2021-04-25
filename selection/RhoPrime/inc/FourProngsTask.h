@@ -22,7 +22,7 @@ class TBits;
 class FourProngsTask : public AliAnalysisTaskSE {
 public:
   FourProngsTask();
-  FourProngsTask(const char *name);
+  FourProngsTask(const char *name, bool isMC = false);
   virtual ~FourProngsTask();
 
   virtual void Init();
@@ -54,13 +54,16 @@ private:
 
   float ZNAenergy, ZNCenergy, ZPAenergy, ZPCenergy;
 
+  float ZDCAtime[4];
+  float ZDCCtime[4];
+
   int VtxContrib;
   float VtxChi2, VtxNDF;
   int SpdVtxContrib;
 
   int nTracklets, nTracks;
 
-  float Vertex[3], SpdVertex[3], ZDCAtime[4], ZDCCtime[4];
+  float Vertex[3], SpdVertex[3];
 
   // event params
 
