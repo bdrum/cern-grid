@@ -2,8 +2,8 @@
  * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef FourProngsTask_H
-#define FourProngsTask_H
+#ifndef FourProngsTaskMC_H
+#define FourProngsTaskMC_H
 
 class TClonesArray;
 class TFile;
@@ -19,11 +19,11 @@ class TBits;
 #include "AliAnalysisTaskSE.h"
 #include <vector>
 
-class FourProngsTask : public AliAnalysisTaskSE {
+class FourProngsTaskMC : public AliAnalysisTaskSE {
 public:
-  FourProngsTask();
-  FourProngsTask(const char *name);
-  virtual ~FourProngsTask();
+  FourProngsTaskMC();
+  FourProngsTaskMC(const char *name);
+  virtual ~FourProngsTaskMC();
 
   virtual void Init();
   virtual void UserCreateOutputObjects();
@@ -46,10 +46,6 @@ private:
 
   int V0Adecision, V0Cdecision, ADAdecision, ADCdecision;
 
-  bool V0Afired, V0Cfired, ADAfired, ADCfired, STPfired, SMBfired, SM2fired,
-      SH1fired, OM2fired, OMUfired, IsTriggered;
-
-  std::vector<int> FORChip;
   int StartedRuns;
 
   float ZNAenergy, ZNCenergy, ZPAenergy, ZPCenergy;
@@ -69,6 +65,8 @@ private:
 
   // track params
 
+  std::vector<float> MCPart_PdgCode, MCPart_Px, MCPart_Py, MCPart_Pz;
+
   std::vector<float> T_NumberOfSigmaITSPion, T_NumberOfSigmaITSElectron,
       T_NumberOfSigmaTPCPion, T_NumberOfSigmaTPCElectron, T_P, T_Eta, T_Phi,
       T_Px, T_Py, T_Pz, T_Dca0, T_Dca1, T_Lets_Theta, T_Lets_Phi;
@@ -83,17 +81,14 @@ private:
 
   AliPIDResponse *fPIDResponse;
 
-  FourProngsTask(const FourProngsTask &);            // not implemented
-  FourProngsTask &operator=(const FourProngsTask &); // not implemented
-
-  bool Is0STPfired(int *, int *);
-  bool CheckEventTrigger(AliESDEvent *);
+  FourProngsTaskMC(const FourProngsTaskMC &);            // not implemented
+  FourProngsTaskMC &operator=(const FourProngsTaskMC &); // not implemented
 
   void ClearTracksVectors();
   void ReserveTracksVectors(int size);
   void ShrinkToFitTracksVectors();
 
-  ClassDef(FourProngsTask, 5);
+  ClassDef(FourProngsTaskMC, 1);
 };
 
 #endif

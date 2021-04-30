@@ -13,10 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliESD.h"
-#include "AliESDEvent.h"
-#include "AliESDVZERO.h"
-#include "AliESDtrack.h"
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
+#include "AliAODVZERO.h"
 #include "AliVTrack.h"
 
 #include "Math/Vector4D.h"
@@ -42,25 +41,23 @@
 #include "AliAODVertex.h"
 #include "AliAODZDC.h"
 
-#include "AliESDVertex.h"
-#include "AliESDZDC.h"
+#include "AliAODVertex.h"
+#include "AliAODZDC.h"
 #include "AliPIDResponse.h"
 
-#include "FourProngsTask.h"
+#include "FourProngsTaskMC.h"
 
 // TODO: add split for trigger string via ';'
-// TODO: dynamic switch from esd to aod based on input data
-// TODO: add tests - comparison of results from local running on ESD data
+// TODO: dynamic switch from aod to aod based on input data
+// TODO: add tests - comparison of results from local running on aod data
 
-ClassImp(FourProngsTask);
+ClassImp(FourProngsTaskMC);
 
-FourProngsTask::FourProngsTask()
+FourProngsTaskMC::FourProngsTaskMC()
     : AliAnalysisTaskSE(), fPIDResponse(0), fTriggerName(0), fRhoTree(0),
       fStartedRunsTree(0), BunchCrossNumber(0), OrbitNumber(0), PeriodNumber(0),
       RunNum(0), Mass(0), Q(-10), Pt(0), Rapidity(0), V0Adecision(0),
-      V0Cdecision(0), ADAdecision(0), ADCdecision(0), V0Afired(0), V0Cfired(0),
-      ADAfired(0), ADCfired(0), STPfired(0), SMBfired(0), SM2fired(0),
-      SH1fired(0), OM2fired(0), OMUfired(0), IsTriggered(0), ZNAenergy(0),
+      V0Cdecision(0), ADAdecision(0), ADCdecision(0), ZNAenergy(0),
       ZNCenergy(0), ZPAenergy(0), ZPCenergy(0), VtxContrib(0), SpdVtxContrib(0),
       VtxChi2(0), VtxNDF(0), nTracklets(0), nTracks(0), Phi(0),
       T_NumberOfSigmaTPCPion(0), T_NumberOfSigmaTPCElectron(0),
@@ -68,16 +65,15 @@ FourProngsTask::FourProngsTask()
       T_P(0), T_Eta(0), T_Phi(0), T_Px(0), T_Py(0), T_Pz(0), T_Q(0),
       T_HasPointOnITSLayer0(0), T_HasPointOnITSLayer1(0), T_ITSModuleInner(0),
       T_ITSModuleOuter(0), T_TPCNCls(0), T_ITSNCls(0), T_Dca0(0), T_Dca1(0),
-      T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), FORChip(0),
-      StartedRuns(0) {}
+      T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0),
+      StartedRuns(0), MCPart_PdgCode(0), MCPart_Px(0), MCPart_Py(0),
+      MCPart_Pz(0) {}
 
-FourProngsTask::FourProngsTask(const char *name)
+FourProngsTaskMC::FourProngsTaskMC(const char *name)
     : AliAnalysisTaskSE(name), fPIDResponse(0), fTriggerName(0), fRhoTree(0),
       fStartedRunsTree(0), BunchCrossNumber(0), OrbitNumber(0), PeriodNumber(0),
       RunNum(0), Mass(0), Q(-10), Pt(0), Rapidity(0), V0Adecision(0),
-      V0Cdecision(0), ADAdecision(0), ADCdecision(0), V0Afired(0), V0Cfired(0),
-      ADAfired(0), ADCfired(0), STPfired(0), SMBfired(0), SM2fired(0),
-      SH1fired(0), OM2fired(0), OMUfired(0), IsTriggered(0), ZNAenergy(0),
+      V0Cdecision(0), ADAdecision(0), ADCdecision(0), ZNAenergy(0),
       ZNCenergy(0), ZPAenergy(0), ZPCenergy(0), VtxContrib(0), SpdVtxContrib(0),
       VtxChi2(0), VtxNDF(0), nTracklets(0), nTracks(0), Phi(0),
       T_NumberOfSigmaTPCPion(0), T_NumberOfSigmaTPCElectron(0),
@@ -85,22 +81,18 @@ FourProngsTask::FourProngsTask(const char *name)
       T_P(0), T_Eta(0), T_Phi(0), T_Px(0), T_Py(0), T_Pz(0), T_Q(0),
       T_HasPointOnITSLayer0(0), T_HasPointOnITSLayer1(0), T_ITSModuleInner(0),
       T_ITSModuleOuter(0), T_TPCNCls(0), T_ITSNCls(0), T_Dca0(0), T_Dca1(0),
-      T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0), FORChip(0),
-      StartedRuns(0) {
+      T_TPCRefit(0), T_ITSRefit(0), T_Lets_Theta(0), T_Lets_Phi(0),
+      StartedRuns(0), MCPart_PdgCode(0), MCPart_Px(0), MCPart_Py(0),
+      MCPart_Pz(0) {
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TTree::Class());
-  DefineOutput(2, TTree::Class());
 }
 
-FourProngsTask::~FourProngsTask() {
+FourProngsTaskMC::~FourProngsTaskMC() {
   if (fRhoTree) {
     delete fRhoTree;
     fRhoTree = nullptr;
-  }
-  if (fStartedRunsTree) {
-    delete fStartedRunsTree;
-    fStartedRunsTree = nullptr;
   }
   if (fPIDResponse) {
     delete fPIDResponse;
@@ -108,7 +100,7 @@ FourProngsTask::~FourProngsTask() {
   }
 }
 
-void FourProngsTask::Init() {
+void FourProngsTaskMC::Init() {
   for (int i = 0; i < 3; i++) {
     Vertex[i] = -1717;
     SpdVertex[i] = -1717;
@@ -122,11 +114,9 @@ void FourProngsTask::Init() {
   // 235 - is the average number of tracks in event
   // 11000 - is the max number of tracks in event
   ReserveTracksVectors(11000);
-  // 1084 is the max number of fired FORs for event
-  FORChip.reserve(1084);
 }
 
-void FourProngsTask::UserCreateOutputObjects() {
+void FourProngsTaskMC::UserCreateOutputObjects() {
   auto *man = AliAnalysisManager::GetAnalysisManager();
   auto *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
@@ -161,18 +151,6 @@ void FourProngsTask::UserCreateOutputObjects() {
   fRhoTree->Branch("ADAdecision", &ADAdecision, "ADAdecision/I");
   fRhoTree->Branch("ADCdecision", &ADCdecision, "ADCdecision/I");
 
-  fRhoTree->Branch("V0Afired", &V0Afired, "V0Afired/O");
-  fRhoTree->Branch("V0Cfired", &V0Cfired, "V0Cfired/O");
-  fRhoTree->Branch("ADAfired", &ADAfired, "ADAfired/O");
-  fRhoTree->Branch("ADCfired", &ADCfired, "ADCfired/O");
-  fRhoTree->Branch("STPfired", &STPfired, "STPfired/O");
-  fRhoTree->Branch("SMBfired", &SMBfired, "SMBfired/O");
-  fRhoTree->Branch("SM2fired", &SM2fired, "SM2fired/O");
-  fRhoTree->Branch("SH1fired", &SH1fired, "SH1fired/O");
-  fRhoTree->Branch("OM2fired", &OM2fired, "OM2fired/O");
-  fRhoTree->Branch("OMUfired", &OMUfired, "OMUfired/O");
-  fRhoTree->Branch("IsTriggered", &IsTriggered, "IsTriggered/O");
-
   fRhoTree->Branch("nTracklets", &nTracklets, "nTracklets/I");
   fRhoTree->Branch("nTracks", &nTracks, "nTracks/I");
 
@@ -185,6 +163,11 @@ void FourProngsTask::UserCreateOutputObjects() {
   fRhoTree->Branch("ZDCCtime_1", &ZDCCtime[1], "ZDCCtime_1/F");
   fRhoTree->Branch("ZDCCtime_2", &ZDCCtime[2], "ZDCCtime_2/F");
   fRhoTree->Branch("ZDCCtime_3", &ZDCCtime[3], "ZDCCtime_3/F");
+
+  fRhoTree->Branch("MCPart_PdgCode", &MCPart_PdgCode);
+  fRhoTree->Branch("MCPart_Px", &MCPart_Px);
+  fRhoTree->Branch("MCPart_Py", &MCPart_Py);
+  fRhoTree->Branch("MCPart_Pz", &MCPart_Pz);
 
   fRhoTree->Branch("T_NumberOfSigmaITSPion", &T_NumberOfSigmaITSPion);
   fRhoTree->Branch("T_NumberOfSigmaITSElectron", &T_NumberOfSigmaITSElectron);
@@ -210,39 +193,23 @@ void FourProngsTask::UserCreateOutputObjects() {
   fRhoTree->Branch("T_ITSRefit", &T_ITSRefit);
   fRhoTree->Branch("TLets_Theta", &T_Lets_Theta);
   fRhoTree->Branch("TLets_Phi", &T_Lets_Phi);
-  fRhoTree->Branch("FORChip", &FORChip);
 
   PostData(1, fRhoTree);
-
-  OpenFile(2);
-
-  fStartedRunsTree =
-      new TTree("StartedRuns",
-                "Run numbers that has been started and not necessary passed");
-
-  fStartedRunsTree->Branch("StartedRuns", &StartedRuns, "StartedRuns/I");
-
-  PostData(2, fStartedRunsTree);
 }
 
-void FourProngsTask::UserExec(Option_t *) {
-  auto *esd = (AliESDEvent *)InputEvent();
-  if (!esd)
+void FourProngsTaskMC::UserExec(Option_t *) {
+  auto *aod = (AliAODEvent *)InputEvent();
+  if (!aod)
     return;
 
-  TString trigger = esd->GetFiredTriggerClasses();
+  TString trigger = aod->GetFiredTriggerClasses();
 
-  if (!trigger.Contains("CCUP9-B"))
-    return;
-  StartedRuns = esd->GetRunNumber();
-  fStartedRunsTree->Fill();
-  PostData(2, fStartedRunsTree);
-
-  IsTriggered = kFALSE;
   nTracks = 0;
   Q = 0;
 
-  auto *fESDVertex = (AliESDVertex *)esd->GetPrimaryVertex();
+  auto *fAODVertex = (AliAODVertex *)aod->GetPrimaryVertex();
+  double dca[2] = {0.0, 0.0}, cov[3] = {0., 0., 0.};
+
   auto *pdgdat = TDatabasePDG::Instance();
   auto *partPion = pdgdat->GetParticle(211);
   auto pionMass = partPion->Mass();
@@ -250,15 +217,15 @@ void FourProngsTask::UserExec(Option_t *) {
   Init();
 
   // event info
-  RunNum = esd->GetRunNumber();
-  OrbitNumber = esd->GetOrbitNumber();
-  PeriodNumber = esd->GetPeriodNumber();
-  BunchCrossNumber = esd->GetBunchCrossNumber();
+  RunNum = aod->GetRunNumber();
+  OrbitNumber = aod->GetOrbitNumber();
+  PeriodNumber = aod->GetPeriodNumber();
+  BunchCrossNumber = aod->GetBunchCrossNumber();
 
   // VZERO, ZDC, AD
-  auto *fV0data = esd->GetVZEROData();
-  auto *fZDCdata = esd->GetESDZDC();
-  auto *fADdata = esd->GetADData();
+  auto *fV0data = aod->GetVZEROData();
+  // auto *fZDCdata = aod->GetAODZDC();
+  auto *fADdata = aod->GetADData();
 
   V0Adecision = fV0data->GetV0ADecision();
   V0Cdecision = fV0data->GetV0CDecision();
@@ -269,85 +236,99 @@ void FourProngsTask::UserExec(Option_t *) {
   }
 
   // ZN energy
-  ZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
-  ZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
-  ZPAenergy = fZDCdata->GetZPATowerEnergy()[0];
-  ZPCenergy = fZDCdata->GetZPCTowerEnergy()[0];
+  // ZNAenergy = fZDCdata->GetZNATowerEnergy()[0];
+  // ZNCenergy = fZDCdata->GetZNCTowerEnergy()[0];
+  // ZPAenergy = fZDCdata->GetZPATowerEnergy()[0];
+  // ZPCenergy = fZDCdata->GetZPCTowerEnergy()[0];
 
-  // neutron ZDC time
-  int detChZNA = fZDCdata->GetZNATDCChannel();
-  int detChZNC = fZDCdata->GetZNCTDCChannel();
+  // // neutron ZDC time
+  // int detChZNA = fZDCdata->GetZNATDCChannel();
+  // int detChZNC = fZDCdata->GetZNCTDCChannel();
 
-  for (auto i = 0; i < 4; ++i) {
-    ZDCAtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNA, i);
-    ZDCCtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNC, i);
-  }
+  // for (auto i = 0; i < 4; ++i) {
+  //   ZDCAtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNA, i);
+  //   ZDCCtime[i] = fZDCdata->GetZDCTDCCorrected(detChZNC, i);
+  // }
 
   // primary vertex
-  VtxContrib = fESDVertex->GetNContributors();
-  Vertex[0] = fESDVertex->GetX();
-  Vertex[1] = fESDVertex->GetY();
-  Vertex[2] = fESDVertex->GetZ();
-  VtxChi2 = fESDVertex->GetChi2();
-  VtxNDF = fESDVertex->GetNDF();
+  VtxContrib = fAODVertex->GetNContributors();
+  Vertex[0] = fAODVertex->GetX();
+  Vertex[1] = fAODVertex->GetY();
+  Vertex[2] = fAODVertex->GetZ();
+  VtxChi2 = fAODVertex->GetChi2();
+  VtxNDF = fAODVertex->GetNDF();
 
   // SPD primary vertex
-  auto *fSPDVertex = (AliESDVertex *)esd->GetPrimaryVertexSPD();
+  auto *fSPDVertex = (AliAODVertex *)aod->GetPrimaryVertexSPD();
   SpdVtxContrib = fSPDVertex->GetNContributors();
   SpdVertex[0] = fSPDVertex->GetX();
   SpdVertex[1] = fSPDVertex->GetY();
   SpdVertex[2] = fSPDVertex->GetZ();
 
   // Tracklets
-  nTracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
+  nTracklets = aod->GetMultiplicity()->GetNumberOfTracklets();
 
   for (auto i = 0; i < nTracklets; ++i) {
-    T_Lets_Theta.push_back(esd->GetMultiplicity()->GetTheta(i));
-    T_Lets_Phi.push_back(esd->GetMultiplicity()->GetPhi(i));
+    T_Lets_Theta.push_back(aod->GetMultiplicity()->GetTheta(i));
+    T_Lets_Phi.push_back(aod->GetMultiplicity()->GetPhi(i));
   }
+
+  auto *arrayMC = (TClonesArray *)aod->GetList()->FindObject(
+      AliAODMCParticle::StdBranchName());
+
+  int ngen = 0;
+  float pxsum = 0., pysum = 0., pzsum = 0., esum = 0.;
+  for (Int_t imc = 0; imc < arrayMC->GetEntriesFast(); imc++) {
+    AliAODMCParticle *aodmc =
+        dynamic_cast<AliAODMCParticle *>(arrayMC->At(imc));
+    if (!aodmc)
+      continue;
+
+    if (aodmc->GetMother() > 0 || fabs(aodmc->GetPdgCode()) != 211)
+      continue;
+
+    MCPart_PdgCode.push_back(aodmc->GetPdgCode());
+    MCPart_Px.push_back(aodmc->Px());
+    MCPart_Py.push_back(aodmc->Py());
+    MCPart_Pz.push_back(aodmc->Pz());
+  }
+
+  ShrinkToFitTracksVectors();
+
+  fRhoTree->Fill();
+
+  PostData(1, fRhoTree);
+
+  return;
 
   std::vector<ROOT::Math::PxPyPzMVector> EventVectors;
 
-  // std::cout << TString::Format("%d, %d, %d, %d, %d", RunNum, PeriodNumber,
-  //                              OrbitNumber, BunchCrossNumber,
-  //                              esd->GetNumberOfTracks())
-  //           << std::endl;
-
   // Track loop - cuts
-  for (int i = 0; i < esd->GetNumberOfTracks(); ++i) {
-    auto *trk = esd->GetTrack(i);
+  for (int i = 0; i < aod->GetNumberOfTracks(); ++i) {
+    AliAODTrack *trk = dynamic_cast<AliAODTrack *>(aod->GetTrack(i));
     if (!trk)
       continue;
-    if (!trk->HasPointOnITSLayer(0) && !trk->HasPointOnITSLayer(1))
-      continue;
-    float dca[2] = {0.0, 0.0};
-    trk->GetImpactParameters(dca[0], dca[1]);
-    if (TMath::Abs(dca[1]) > 3)
-      continue;
-    if (TMath::Abs(dca[0]) > 3)
-      continue;
-    if (trk->IsPureITSStandalone())
-      continue;
-    if (trk->GetNumberOfITSClusters() < 3)
-      continue;
 
-    // std::cout << i << " | " << dca[0] << " | " << dca[1] << " | " <<
-    // trk->GetNumberOfITSClusters() << " | " << trk->HasPointOnITSLayer(0) << "
-    // | " << trk->HasPointOnITSLayer(1) << std::endl;
+    if (nTracks > 2)
+      break;
+
+    if (!(trk->GetFilterMap() & 1 << 0) && !(trk->GetFilterMap() & 1 << 1) &&
+        trk->AliAODTrack::GetITSNcls() * trk->AliAODTrack::GetTPCNcls() == 0)
+      continue;
 
     nTracks++;
     Q += trk->Charge();
-
-    T_ITSModuleInner.push_back(trk->GetITSModuleIndex(0));
-    T_ITSModuleOuter.push_back(trk->GetITSModuleIndex(1));
+    trk->PropagateToDCA(fAODVertex, aod->GetMagneticField(), 300., dca, cov);
+    // T_ITSModuleInner.push_back(trk->GetITSModuleIndex(0));
+    // T_ITSModuleOuter.push_back(trk->GetITSModuleIndex(1));
 
     T_HasPointOnITSLayer0.push_back(trk->HasPointOnITSLayer(0));
     T_HasPointOnITSLayer1.push_back(trk->HasPointOnITSLayer(1));
 
-    T_ITSNCls.push_back(trk->GetNumberOfITSClusters());
-    T_TPCNCls.push_back(trk->GetNumberOfTPCClusters());
-    T_TPCRefit.push_back(trk->IsOn(AliESDtrack::kTPCrefit));
-    T_ITSRefit.push_back(trk->IsOn(AliESDtrack::kITSrefit));
+    // T_ITSNCls.push_back(trk->GetNumberOfITSClusters());
+    // T_TPCNCls.push_back(trk->GetNumberOfTPCClusters());
+    T_TPCRefit.push_back(trk->IsOn(AliAODTrack::kTPCrefit));
+    T_ITSRefit.push_back(trk->IsOn(AliAODTrack::kITSrefit));
 
     // TPC&ITS PID n-sigma
     T_NumberOfSigmaTPCElectron.push_back(
@@ -376,18 +357,8 @@ void FourProngsTask::UserExec(Option_t *) {
 
   } // end loop over tracks
 
-  if (nTracks < 4)
-    return;
-
-  // std::cout << RunNum << " | " << PeriodNumber << " | " << OrbitNumber
-  //           << std::endl;
-
-  IsTriggered = CheckEventTrigger(esd);
-
-  for (int chipkey = 0; chipkey < 1200; chipkey++) {
-    if (esd->GetMultiplicity()->TestFastOrFiredChips(chipkey))
-      FORChip.push_back(chipkey);
-  }
+  // if (nTracks < 4)
+  // return;
 
   ROOT::Math::PxPyPzMVector sumVector;
   for (const auto &tv : EventVectors)
@@ -406,141 +377,7 @@ void FourProngsTask::UserExec(Option_t *) {
 
 } // UserExec
 
-Bool_t FourProngsTask::Is0STPfired(int *vPhiInner,
-                                   int *vPhiOuter) // array 20, 40
-{
-  int fired(0);
-  for (int i(0); i < 10; ++i) {
-    for (int j(0); j < 2; ++j) {
-      const int k(2 * i + j);
-      fired += ((vPhiOuter[k] || vPhiOuter[k + 1] || vPhiOuter[k + 2]) &&
-                (vPhiOuter[k + 20] || vPhiOuter[(k + 21) % 40] ||
-                 vPhiOuter[(k + 22) % 40]) &&
-                (vPhiInner[i] || vPhiInner[i + 1]) &&
-                (vPhiInner[i + 10] || vPhiInner[(i + 11) % 20]));
-    }
-  }
-  if (fired != 0)
-    return kTRUE;
-  else
-    return kFALSE;
-}
-
-// return kTRUE if CCUP9 triggered was fired
-Bool_t FourProngsTask::CheckEventTrigger(AliESDEvent *esd) {
-  V0Afired = kFALSE;
-  V0Cfired = kFALSE;
-  ADAfired = kFALSE;
-  ADCfired = kFALSE;
-  STPfired = kFALSE;
-  SMBfired = kFALSE;
-  SM2fired = kFALSE;
-  SH1fired = kFALSE;
-  OM2fired = kFALSE;
-  OMUfired = kFALSE;
-
-  // SPD inputs
-  // int bcMod4 = 0;
-  // if (isUsingEffi) bcMod4 = TMath::Nint(hBCmod4->GetRandom());
-
-  auto *mult = esd->GetMultiplicity();
-  int vPhiInner[20];
-  for (int i = 0; i < 20; ++i)
-    vPhiInner[i] = 0;
-  int vPhiOuter[40];
-  for (int i = 0; i < 40; ++i)
-    vPhiOuter[i] = 0;
-
-  int nInner(0), nOuter(0);
-
-  for (int i(0); i < 1200; ++i) {
-    // Double_t eff = 1;
-    // if (isUsingEffi) eff = hSPDeff->GetBinContent(1+i, 1+bcMod4);
-
-    auto isFired =
-        (mult->TestFastOrFiredChips(i)); //&& (gRandom->Uniform(0,1) < eff);
-    if (i < 400) {
-      vPhiInner[i / 20] += isFired;
-      nInner += isFired;
-    } else {
-      vPhiOuter[(i - 400) / 20] += isFired;
-      nOuter += isFired;
-    }
-  }
-
-  // 0STP
-  STPfired = Is0STPfired(vPhiInner, vPhiOuter);
-  // 0SMB - At least one hit in SPD
-  if (nOuter > 0 || nInner > 0)
-    SMBfired = kTRUE;
-  // 0SM2 - Two hits on outer layer
-  if (nOuter > 1)
-    SM2fired = kTRUE;
-  // 0SH1 - More then 6 hits on outer layer
-  // if (nOuter >= 7) SH1 = kTRUE;
-  // 0SH1 2017 - Two hits on inner and outer layer
-  if (nInner >= 2 && nOuter >= 2)
-    SH1fired = kTRUE;
-
-  // V0
-  V0Afired = esd->GetHeader()->IsTriggerInputFired("0VBA");
-  V0Cfired = esd->GetHeader()->IsTriggerInputFired("0VBC");
-  // AD
-  ADAfired = esd->GetHeader()->IsTriggerInputFired("0UBA");
-  ADCfired = esd->GetHeader()->IsTriggerInputFired("0UBC");
-  // TOF
-  OMUfired = esd->GetHeader()->IsTriggerInputFired("0OMU");
-
-  // OM2
-  // if (isUsingTOFeff) {
-  // const AliTOFHeader *tofH = esd->GetTOFHeader();
-  // fTOFmask = tofH->GetTriggerMask();
-
-  // Bool_t firedMaxiPhi[36] = {0};
-  // int NfiredMaxiPads = 0;
-
-  // for(int ltm=0;ltm<72;ltm++){
-  // int ip = ltm%36;
-  // for(int cttm=0;cttm<23;cttm++){
-  // if(fTOFmask->IsON(ltm,cttm) &&
-  // gRandom->Rndm(1.0)<hTOFeff->GetBinContent(ltm+1,cttm+1)){ firedMaxiPhi[ip]
-  // = kTRUE; NfiredMaxiPads++;
-  // }
-  // }
-  // }
-  // if(NfiredMaxiPads >= 2) {
-  // OM2 = kTRUE; //0OM2 TOF two hits
-  // }
-
-  // }
-  // else OM2 = esd->GetHeader()->IsTriggerInputFired("0OM2");
-  OM2fired = esd->GetHeader()->IsTriggerInputFired("0OM2");
-
-  // save spd and tof trigger decisions to tree
-  // TriggerSPD_T = SH1;
-  // TriggerTOF_T = OM2;
-
-  if ((fTriggerName == "CCUP9-B") &&
-      (!V0Afired && !V0Cfired && !ADAfired && !ADCfired && STPfired))
-    return kTRUE; // CCUP9 is fired
-  else
-    return kFALSE;
-
-  // if (fOption.Contains("17n")) {
-  // 	if ((fTriggerName.Contains("CCUP2")) && (!V0Afired && !V0Cfired)) return
-  // kTRUE; // CCUP2 in 17n
-  // 	}
-  // else {
-  // 	if ((fTriggerName.Contains("CCUP2")) && (!V0Afired && !V0Cfired &&
-  // SM2fired && OM2fired)) return kTRUE; // CCUP2 is fired works only in 2015
-  // }
-  // if ((fTriggerName == "CCUP4-B") && (!V0A && !V0C && SM2 && OMU)) return
-  // kTRUE; // CCUP4 is fired works only in 2015
-
-  // else return kFALSE;
-} // end of MC trigger
-
-void FourProngsTask::ClearTracksVectors() {
+void FourProngsTaskMC::ClearTracksVectors() {
   T_NumberOfSigmaITSPion.clear();
   T_NumberOfSigmaITSElectron.clear();
   T_NumberOfSigmaTPCPion.clear();
@@ -565,10 +402,9 @@ void FourProngsTask::ClearTracksVectors() {
   T_ITSModuleOuter.clear();
   T_Lets_Theta.clear();
   T_Lets_Phi.clear();
-  FORChip.clear();
 }
 
-void FourProngsTask::ReserveTracksVectors(int size) {
+void FourProngsTaskMC::ReserveTracksVectors(int size) {
   T_NumberOfSigmaITSPion.reserve(size);
   T_NumberOfSigmaITSElectron.reserve(size);
   T_NumberOfSigmaTPCPion.reserve(size);
@@ -593,8 +429,13 @@ void FourProngsTask::ReserveTracksVectors(int size) {
   T_TPCNCls.reserve(size);
   T_ITSNCls.reserve(size);
   T_Q.reserve(size);
+  MCPart_PdgCode.reserve(size);
+  MCPart_Px.reserve(size);
+  MCPart_Py.reserve(size);
+  MCPart_Pz.reserve(size);
 }
-void FourProngsTask::ShrinkToFitTracksVectors() {
+
+void FourProngsTaskMC::ShrinkToFitTracksVectors() {
   T_NumberOfSigmaITSPion.shrink_to_fit();
   T_NumberOfSigmaITSElectron.shrink_to_fit();
   T_NumberOfSigmaTPCPion.shrink_to_fit();
@@ -619,5 +460,8 @@ void FourProngsTask::ShrinkToFitTracksVectors() {
   T_ITSModuleOuter.shrink_to_fit();
   T_Lets_Theta.shrink_to_fit();
   T_Lets_Phi.shrink_to_fit();
-  FORChip.shrink_to_fit();
+  MCPart_PdgCode.shrink_to_fit();
+  MCPart_Px.shrink_to_fit();
+  MCPart_Py.shrink_to_fit();
+  MCPart_Pz.shrink_to_fit();
 }
